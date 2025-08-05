@@ -1,0 +1,108 @@
+---
+description: Enforce Windows PowerShell syntax for all terminal commands and shell operations
+globs: **/*.{ts,tsx,js,jsx,json,md,sh,bat,ps1}
+alwaysApply: true
+---
+
+- **Use Windows PowerShell Syntax for All Commands**
+  - Always use PowerShell-compatible command syntax
+  - Use `cd` instead of `&&` for command chaining
+  - Use `mkdir` instead of `mkdir -p` for directory creation
+  - Use `Remove-Item` or `del` instead of `rm -rf`
+  - Use `Copy-Item` instead of `cp` for file operations
+  - Use `Move-Item` instead of `mv` for file operations
+
+- **PowerShell-Specific Command Patterns**
+  - Use `npm run dev` instead of `npm run dev &`
+  - Use `npm install` instead of `npm i`
+  - Use `npx` for one-time package execution
+  - Use `Get-ChildItem` or `dir` instead of `ls`
+  - Use `New-Item` for creating files and directories
+
+- **Path Handling in PowerShell**
+  - Use backslashes `\` for Windows paths
+  - Use `$env:` prefix for environment variables
+  - Use `Join-Path` for cross-platform path construction
+  - Use `Split-Path` for path manipulation
+
+- **Command Chaining and Control Flow**
+  ```powershell
+  # ✅ DO: Use PowerShell syntax
+  cd project-directory
+  npm install
+  npm run dev
+  
+  # ❌ DON'T: Use bash syntax
+  cd project-directory && npm install && npm run dev
+  ```
+
+- **Directory Operations**
+  ```powershell
+  # ✅ DO: PowerShell directory commands
+  mkdir src\components
+  Remove-Item -Recurse -Force node_modules
+  Copy-Item source.txt destination.txt
+  
+  # ❌ DON'T: Use bash directory commands
+  mkdir -p src/components
+  rm -rf node_modules
+  cp source.txt destination.txt
+  ```
+
+- **Environment and Variables**
+  ```powershell
+  # ✅ DO: PowerShell environment syntax
+  $env:NODE_ENV = "development"
+  $env:PATH += ";C:\Program Files\Node.js"
+  
+  # ❌ DON'T: Use bash environment syntax
+  export NODE_ENV=development
+  export PATH=$PATH:/usr/local/bin
+  ```
+
+- **File Operations**
+  ```powershell
+  # ✅ DO: PowerShell file operations
+  New-Item -ItemType File -Name "config.json"
+  Get-Content "package.json" | Select-String "dependencies"
+  
+  # ❌ DON'T: Use bash file operations
+  touch config.json
+  grep "dependencies" package.json
+  ```
+
+- **Package Management Commands**
+  ```powershell
+  # ✅ DO: Use npm with PowerShell
+  npm install
+  npm run build
+  npx create-react-app my-app
+  
+  # ❌ DON'T: Use bash-specific syntax
+  npm install &
+  npm run build && npm run test
+  ```
+
+- **Error Handling and Output**
+  - Use `try/catch` blocks for error handling
+  - Use `Write-Host` for output instead of `echo`
+  - Use `Write-Error` for error messages
+  - Use `$LASTEXITCODE` to check command exit codes
+
+- **Cross-Platform Considerations**
+  - Always test commands in Windows PowerShell
+  - Use `Test-Path` instead of `[ -f file ]`
+  - Use `if/else` instead of bash conditionals
+  - Use PowerShell arrays instead of bash arrays
+
+- **Integration with Development Tools**
+  - Ensure all npm scripts work in PowerShell
+  - Use PowerShell-compatible git commands
+  - Configure VS Code terminal to use PowerShell
+  - Use PowerShell-compatible environment variables
+
+- **Documentation and Comments**
+  - Include PowerShell examples in README files
+  - Use PowerShell comment syntax `#` for scripts
+  - Document PowerShell-specific setup steps
+  - Provide PowerShell alternatives for bash commands

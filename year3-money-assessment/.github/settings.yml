@@ -1,0 +1,65 @@
+# GitHub Repository Settings
+# This file configures repository settings via GitHub Actions
+
+repository:
+  # Repository name
+  name: year3-money-assessment
+  
+  # Repository description
+  description: "A React-based interactive assessment tool for Year 3 students to practice money-related concepts"
+  
+  # Repository homepage
+  homepage: "https://dsuth10.github.io/year3-money-assessment"
+  
+  # Repository topics/tags
+  topics: "react,typescript,education,money-assessment,offline-first,pwa"
+  
+  # Repository visibility (public/private)
+  private: false
+  
+  # Default branch
+  default_branch: main
+  
+  # Allow squash merging
+  allow_squash_merge: true
+  
+  # Allow merge commits
+  allow_merge_commit: true
+  
+  # Allow rebase merging
+  allow_rebase_merge: true
+  
+  # Delete head branch when pull request is merged
+  delete_branch_on_merge: true
+  
+  # Allow auto-merge
+  allow_auto_merge: true
+  
+  # Allow update branch
+  allow_update_branch: true
+  
+  # Enable issues
+  has_issues: true
+  
+  # Enable wiki
+  has_wiki: false
+  
+  # Enable downloads
+  has_downloads: false
+  
+  # Enable projects
+  has_projects: false
+  
+  # Enable discussions
+  has_discussions: false
+  
+  # Enable security policy
+  security_and_analysis:
+    secret_scanning:
+      status: enabled
+    secret_scanning_push_protection:
+      status: enabled
+    dependabot_security_updates:
+      status: enabled
+    dependabot_version_updates:
+      status: enabled 

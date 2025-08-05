@@ -1,0 +1,330 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Set Up React Project Foundation with TypeScript, Vite, and Tailwind CSS",
+        "description": "Initialize a new React project using Vite with TypeScript, integrate Tailwind CSS (v3.3+), and configure the build system for offline deployment using the latest best practices. Establish the basic project structure, enable TypeScript IntelliSense and ESM support, and ensure all core configuration files are present and correctly set up for modern development and offline-first requirements.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "details": "1. Create a new Vite project using the React + TypeScript template: `npm create vite@latest my-project -- --template react-ts` and navigate into the project directory.[1][4]\n2. Install all necessary dependencies: `npm install`.\n3. Add Tailwind CSS v3.3+ and its peer dependencies: `npm install -D tailwindcss postcss autoprefixer`.\n4. Generate Tailwind and PostCSS configuration files with TypeScript support: `npx tailwindcss init --ts -p` (creates `tailwind.config.ts` and `postcss.config.js`).[1]\n5. Update `tailwind.config.ts` to use the modern ESM/TypeScript syntax, including `content: [\"./index.html\", \"./src/**/*.{js,ts,jsx,tsx}\"]` and `satisfies Config` for type safety.[1]\n6. In `src/index.css`, add Tailwind's base, components, and utilities directives: `@tailwind base; @tailwind components; @tailwind utilities;`.\n7. Ensure `vite.config.ts` is present and configured for React and TypeScript. Use the official Vite React plugin (`@vitejs/plugin-react` or `@vitejs/plugin-react-swc`). Add `/// <reference types=\"vite/client\" />` at the top for TypeScript IntelliSense and asset import types.[1][3]\n8. In `tsconfig.json`, set `moduleResolution: \"bundler\"` for optimal ESM support and ensure compatibility with Vite and React. Include `vite/client` types in `types` array if needed.[1]\n9. Ensure `package.json` scripts include `dev`, `build`, and `preview` commands.\n10. Organize the basic project structure: at minimum, `src/`, `public/`, and configuration files at the root. Add a `vite-env.d.ts` file if not present for Vite-specific types.[4]\n11. Optionally, add a sample component and Tailwind-styled element to confirm setup.\n12. Integrate ESLint with type-aware linting and React-specific rules (`eslint-plugin-react-x`).\n13. For offline deployment, install the Vite PWA plugin (`npm install vite-plugin-pwa --save-dev`). Configure it in `vite.config.ts` with `registerType: 'autoUpdate'`, `devOptions.enabled: true`, and Workbox integration for offline support. Ensure service worker registration uses TypeScript.[1]\n14. Document all custom configuration, offline deployment steps, and modern setup details in a `README.md`.",
+        "testStrategy": "1. Run `npm run dev` and verify the development server starts without errors and TypeScript IntelliSense works in the IDE.[1][3]\n2. Confirm that Tailwind CSS classes are applied by rendering a sample component with Tailwind utility classes and checking the output in the browser.\n3. Check that all configuration files (`package.json`, `vite.config.ts`, `tsconfig.json`, `tailwind.config.ts`, `postcss.config.js`, `vite-env.d.ts`) exist and are correctly set up for ESM and TypeScript.[1][4]\n4. Build the project with `npm run build` and verify the output in the `dist/` directory.\n5. If offline deployment is configured, test the build output in a local server and verify offline functionality (e.g., using Lighthouse or by disabling the network in DevTools). Confirm PWA registration and auto-update behavior.[1]\n6. Ensure the project structure matches the documented layout and all scripts work as intended.\n7. Run ESLint and confirm type-aware linting and React rules are enforced.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize Vite React + TypeScript Project",
+            "description": "Create a new project directory and scaffold a React application using Vite with TypeScript template.",
+            "status": "done",
+            "dependencies": [],
+            "details": "Run `npm create vite@latest my-project -- --template react-ts` to generate the project. Navigate into the project directory with `cd my-project`. This sets up the initial project structure and configuration files for React and TypeScript. Ensure the project uses the latest Vite version for ESM and TypeScript support.",
+            "testStrategy": "Verify that the project directory contains `src/`, `public/`, `vite.config.ts`, `tsconfig.json`, and other standard files. Run `npm install` and `npm run dev` to confirm the development server starts and the default React page loads. Check that TypeScript IntelliSense is working in the IDE."
+          },
+          {
+            "id": 2,
+            "title": "Install and Configure Tailwind CSS",
+            "description": "Add Tailwind CSS v3.3+ and its peer dependencies, then generate and configure Tailwind and PostCSS configuration files using TypeScript.",
+            "status": "done",
+            "dependencies": [],
+            "details": "Run `npm install -D tailwindcss postcss autoprefixer` to add Tailwind and its dependencies. Generate configuration files with `npx tailwindcss init --ts -p` to create `tailwind.config.ts` (TypeScript) and `postcss.config.js`. Update `tailwind.config.ts` to use ESM/TypeScript syntax, set `content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}']`, and use `satisfies Config` for type safety. In `src/index.css`, add `@tailwind base; @tailwind components; @tailwind utilities;` at the top.",
+            "testStrategy": "Start the dev server and add a Tailwind utility class (e.g., `bg-blue-500`) to a component. Confirm the style is applied in the browser. Check that the Tailwind config uses TypeScript and ESM syntax."
+          },
+          {
+            "id": 3,
+            "title": "Configure Vite and TypeScript for React",
+            "description": "Ensure Vite and TypeScript configurations are optimized for React development, ESM, and compatibility with modern tooling.",
+            "status": "done",
+            "dependencies": [],
+            "details": "Review and adjust `vite.config.ts` to include the React plugin (`@vitejs/plugin-react` or `@vitejs/plugin-react-swc`). Add `/// <reference types=\"vite/client\" />` at the top for TypeScript IntelliSense and asset import types. In `tsconfig.json`, set `moduleResolution: \"bundler\"` and ensure compatibility with Vite and React. Add or update scripts in `package.json` for `dev`, `build`, and `preview` commands. Ensure a `vite-env.d.ts` file is present if needed.",
+            "testStrategy": "Run `npm run dev`, `npm run build`, and `npm run preview` to ensure all scripts execute without errors and the app builds successfully. Confirm ESM and TypeScript features work as expected."
+          },
+          {
+            "id": 4,
+            "title": "Set Up Offline Deployment Support (PWA)",
+            "description": "Integrate Vite PWA plugin and configure a TypeScript-based service worker for offline deployment, following latest best practices.",
+            "status": "done",
+            "dependencies": [],
+            "details": "Install the Vite PWA plugin (`npm install vite-plugin-pwa --save-dev`). Update `vite.config.ts` to include the plugin with `registerType: 'autoUpdate'`, `devOptions.enabled: true`, and Workbox integration for offline support. Ensure service worker registration uses TypeScript. Generate a manifest file as required. Ensure the build output includes all necessary PWA assets.",
+            "testStrategy": "Build the project and serve the `dist/` folder locally. Test offline access by disabling the network and confirming the app loads from cache. Confirm PWA registration and auto-update behavior."
+          },
+          {
+            "id": 5,
+            "title": "Establish Project Structure and Documentation",
+            "description": "Organize the project directory, add a sample Tailwind-styled component, and document setup and custom configurations, including modern TypeScript and PWA setup.",
+            "status": "done",
+            "dependencies": [],
+            "details": "Ensure the directory structure includes `src/`, `public/`, and all config files at the root. Create a sample React component using Tailwind classes to verify integration. Add a `README.md` documenting setup steps, custom configurations, offline deployment instructions, and modern TypeScript/ESM/PWA practices.",
+            "testStrategy": "Check that all files and folders are present and organized. Review `README.md` for completeness and inclusion of modern setup details. Confirm the sample component renders correctly with Tailwind styles."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Implement Core Application Architecture with React Router, Zustand State Management, and IndexedDB Integration",
+        "description": "Set up the main application architecture by configuring React Router for navigation, creating the main App component, and establishing a basic navigation structure. Integrate Zustand for state management to handle quiz state and student data, and connect IndexedDB for persistent storage.",
+        "details": "1. Install React Router DOM (v6+) and Zustand as project dependencies. 2. Configure React Router using createBrowserRouter in your main entry file (e.g., main.tsx), defining a root route that renders the main App component. 3. Create the App component to serve as the root layout, including a navigation bar with links to core sections (e.g., Home, Quiz, Students). 4. Set up nested routes for each main section, using React Router's Outlet for rendering child components. 5. Initialize Zustand stores for managing quiz state and student data, structuring the store to allow updates, resets, and selectors for relevant data. 6. Integrate IndexedDB (using a library such as idb or Dexie.js) to persist quiz and student data, ensuring Zustand state is synchronized with IndexedDB on relevant actions (e.g., on state change, load, or app start). 7. Provide context or hooks for components to access and update state and persistent storage. 8. Ensure all navigation and state management logic is type-safe and compatible with the existing TypeScript setup.\n<info added on 2025-08-05T09:42:42.075Z>\nAdopt the following 2024 best practices for integrating React Router v6+ (`createBrowserRouter`), Zustand v4+, and IndexedDB (preferably with Dexie 4) in your TypeScript application architecture:\n\n- Centralize all route definitions in a dedicated module (e.g., `routes.ts`) using `createBrowserRouter`, and provide the router to your app via `<RouterProvider router={router} />` at the root. Use nested routes and `<Outlet />` in the main `App` layout for section-based navigation (Home, Quiz, Students). Implement route protection with a `ProtectedRoute` component or route loaders for authentication as needed.\n- Structure Zustand stores modularly, creating separate stores for quiz state and student data. Define TypeScript interfaces for state and actions to ensure type safety. Use Zustand for in-memory state and Dexie for persistence, syncing state on app load and significant state changes (e.g., answer submission, quiz completion). Avoid persisting large objects directly in Zustand; instead, persist them in Dexie and hydrate Zustand from Dexie on app start.\n- Set up Dexie 4 as a singleton instance for IndexedDB access, defining explicit TypeScript interfaces for each table (e.g., `StudentAttempt`, `Answer`, `Score`). Use Dexie’s schema versioning for future upgrades and wrap all DB operations in try/catch for robust error handling.\n- On app initialization, hydrate Zustand state from Dexie by loading the latest quiz/student data and updating the store accordingly. On relevant state changes, persist updates to Dexie to ensure data durability across reloads and sessions.\n- Handle edge cases such as IndexedDB unavailability (e.g., private browsing, quota exceeded) by providing fallback UI or error messages. For multi-tab scenarios, use Dexie hooks to synchronize state changes across tabs.\n- For testing, write unit tests for all Dexie CRUD operations and integration tests for state flow between UI, Zustand, and Dexie. Use React Testing Library to verify navigation, route protection, and state-driven rendering.\n- Follow these patterns in your implementation:\n  - Navigation bar in `App` uses `<Link>` for SPA navigation.\n  - All navigation and state logic is type-safe and compatible with TypeScript.\n  - Lazy load heavy route components with `React.lazy` and `Suspense` for performance.\n  - Use error boundaries (`errorElement`) in route configs for graceful error handling.\n  - Expose context or hooks for accessing and updating both Zustand state and persistent storage from components.\n\nReference code examples and further details are available in the 2024 best practices guide for React Router, Zustand, and Dexie integration.\n</info added on 2025-08-05T09:42:42.075Z>",
+        "testStrategy": "1. Verify that navigation between all defined routes works correctly and the correct components render at each path. 2. Confirm that the App component displays the navigation bar and that navigation links update the URL and displayed content without page reloads. 3. Test Zustand store functionality by dispatching actions to update quiz and student data, and ensure state updates are reflected in the UI. 4. Check that data persists across page reloads by saving state to IndexedDB and rehydrating Zustand state from IndexedDB on app load. 5. Use TypeScript to ensure type safety throughout the routing, state management, and persistence layers. 6. Manually test and, if possible, write automated tests for navigation, state updates, and persistence.",
+        "status": "pending",
+        "dependencies": [
+          1
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Install and Configure Core Dependencies",
+            "description": "Install React Router DOM (v6+), Zustand, and an IndexedDB library (such as idb or Dexie.js) as project dependencies. Set up the project to use TypeScript if not already configured.",
+            "dependencies": [],
+            "details": "Run npm or yarn commands to add react-router-dom, zustand, and an IndexedDB library. Ensure TypeScript types are installed for all dependencies.",
+            "status": "pending",
+            "testStrategy": "Verify that all dependencies are listed in package.json and that the project compiles without errors."
+          },
+          {
+            "id": 2,
+            "title": "Set Up React Router with Main App Layout and Navigation",
+            "description": "Configure React Router using createBrowserRouter in the main entry file (e.g., main.tsx). Define a root route that renders the main App component, and implement a navigation bar with links to core sections (Home, Quiz, Students).",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "Create the router configuration using createBrowserRouter and RouterProvider. Implement the App component as the root layout, including a navigation bar using <Link> components for navigation.",
+            "status": "pending",
+            "testStrategy": "Navigate between all defined routes and verify that the correct components render and the URL updates without page reloads."
+          },
+          {
+            "id": 3,
+            "title": "Implement Nested Routes and Section Components",
+            "description": "Set up nested routes for each main section (Home, Quiz, Students) using React Router's Outlet for rendering child components. Create placeholder components for each section.",
+            "dependencies": [
+              "2.2"
+            ],
+            "details": "Define child routes under the root route for each section. Use the Outlet component in the App layout to render nested routes. Implement basic functional components for Home, Quiz, and Students.",
+            "status": "pending",
+            "testStrategy": "Verify that navigating to each section displays the correct component within the main layout."
+          },
+          {
+            "id": 4,
+            "title": "Initialize Zustand Stores for Quiz and Student State Management",
+            "description": "Create Zustand stores to manage quiz state and student data, including actions for updates, resets, and selectors for relevant data. Ensure the store structure supports future extension.",
+            "dependencies": [
+              "2.3"
+            ],
+            "details": "Define TypeScript interfaces for state and actions. Implement Zustand stores for quiz and student data, providing hooks for components to access and update state.",
+            "status": "pending",
+            "testStrategy": "Write unit tests or use the React DevTools to confirm that state updates, resets, and selectors work as intended."
+          },
+          {
+            "id": 5,
+            "title": "Integrate IndexedDB for Persistent Storage and Synchronize with Zustand",
+            "description": "Set up IndexedDB using the chosen library to persist quiz and student data. Implement logic to synchronize Zustand state with IndexedDB on relevant actions (e.g., state change, load, or app start). Provide context or hooks for components to access and update persistent storage.",
+            "dependencies": [
+              "2.4"
+            ],
+            "details": "Create utility functions or hooks for reading and writing to IndexedDB. Ensure that Zustand state is loaded from IndexedDB on app start and saved on relevant state changes. Expose context or hooks for component access.",
+            "status": "pending",
+            "testStrategy": "Simulate app reloads and verify that quiz and student data persist across sessions. Confirm that updates to state are reflected in IndexedDB and vice versa."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Set Up Dexie 4 IndexedDB Integration and Quiz Data Schema",
+        "description": "Integrate Dexie 4 for IndexedDB-based data persistence, define the database schema for student attempts, answers, and scores, and implement data models and CRUD operations for quiz state management.",
+        "details": "1. Install Dexie 4 as a project dependency. 2. Create a dedicated module (e.g., db.ts) to initialize a singleton Dexie instance. 3. Define the database schema using Dexie's declarative syntax, creating tables for studentAttempts, answers, and scores, with appropriate primary keys and indexed fields (e.g., '++id, studentId, quizId, timestamp' for attempts). 4. For TypeScript, define interfaces/types for each entity and extend the Dexie instance for type safety. 5. Implement CRUD functions (create, read, update, delete) for each table, ensuring atomic operations where necessary. 6. Export the db instance and CRUD utilities for use in React components and Zustand stores. 7. Ensure schema versioning is handled for future migrations. 8. Document the schema and API usage for maintainability.",
+        "testStrategy": "1. Write unit tests for each CRUD operation, verifying correct data insertion, retrieval, update, and deletion. 2. Test schema initialization and version upgrades by simulating database upgrades. 3. Integrate with Zustand and React components to confirm data flows correctly between UI, state, and IndexedDB. 4. Manually inspect IndexedDB in the browser's developer tools to verify data structure and persistence. 5. Test error handling for edge cases such as duplicate entries, missing fields, and failed transactions.",
+        "status": "pending",
+        "dependencies": [
+          2
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Implement Drag-and-Drop for Australian Currency with @dnd-kit/core",
+        "description": "Develop reusable drag-and-drop components for Australian coins and notes using @dnd-kit/core, and implement interactive drag zones for quiz question interactions.",
+        "details": "1. Install @dnd-kit/core as a project dependency. 2. Create a reusable <DraggableCurrencyItem> component that leverages the useDraggable hook to represent individual coins and notes, accepting props for denomination, type (coin/note), and image. 3. Implement a <CurrencyDropZone> component using the useDroppable hook, designed to accept currency items and trigger appropriate callbacks on drop (e.g., for quiz answer validation). 4. Wrap relevant UI sections in a <DndContext> provider to manage drag-and-drop state and events. 5. Ensure drag overlays are used for visual feedback during drag operations. 6. Make components accessible by supporting keyboard interactions and providing ARIA attributes. 7. Structure components for reusability and easy extension to additional currency types. 8. Integrate with Zustand state management to update quiz state based on drag-and-drop actions. 9. Follow best practices for performance and accessibility as outlined in the dnd-kit documentation.",
+        "testStrategy": "1. Verify that all Australian coins and notes can be dragged and dropped into designated zones. 2. Confirm that drag-and-drop interactions update the quiz state correctly via Zustand. 3. Test keyboard accessibility for drag-and-drop actions. 4. Check that drag overlays and visual cues appear as expected. 5. Ensure that components are reusable and can be extended for new currency types. 6. Write unit and integration tests for drag-and-drop logic and state updates. 7. Manually test in the browser for smoothness and responsiveness across devices.",
+        "status": "pending",
+        "dependencies": [
+          3
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Develop Question Components and Rendering System for Q1-Q10 with Interactive Validation",
+        "description": "Create interactive components for the first 10 quiz questions, supporting drag-and-drop currency, sorting, and input validation, and implement a question rendering and answer validation system.",
+        "details": "1. Design and implement reusable React components for Q1-Q10, covering drag-and-drop coin/note interactions (leveraging the <DraggableCurrencyItem> and <CurrencyDropZone> from the drag-and-drop system), sorting activities, and basic input fields as required by each question type. 2. Integrate these components into a QuestionRenderer system that dynamically displays the correct question component based on quiz state from Zustand. 3. Implement answer validation logic for each question type, ensuring correct handling of drag-and-drop results, sorted sequences, and input values. 4. Connect validation outcomes to the global quiz state, updating scores and progress. 5. Ensure all components are accessible and responsive, and that drag-and-drop interactions are keyboard-accessible. 6. Use the IndexedDB integration for persisting user answers and progress. 7. Provide clear feedback to users on correct/incorrect answers and allow navigation between questions as appropriate.",
+        "testStrategy": "1. Manually test each question (Q1-Q10) to ensure correct rendering, interaction, and validation for drag-and-drop, sorting, and input types. 2. Simulate user flows: answer questions, submit, and verify that state updates and feedback are correct. 3. Confirm that answers and progress persist across reloads via IndexedDB. 4. Write unit tests for the QuestionRenderer and validation logic, covering edge cases (e.g., invalid drops, incorrect input). 5. Test accessibility for all interactive elements, including keyboard navigation and ARIA attributes. 6. Verify that the system integrates seamlessly with the global quiz state and navigation.",
+        "status": "pending",
+        "dependencies": [
+          2,
+          3,
+          4
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Implement Q11-Q21: Text Entry, Multiple Choice, True/False, and Change Calculation Questions",
+        "description": "Develop and integrate the remaining 11 quiz questions (Q11-Q21), supporting text entry, multiple choice, true/false, and change calculation formats, with robust validation and scoring logic.",
+        "details": "1. Design and implement React components for each question type required in Q11-Q21: text entry (short answer), multiple choice, true/false, and change calculation. Ensure each component supports dynamic rendering based on question data and integrates with the existing QuestionRenderer system. 2. For text entry and change calculation, implement input validation that accounts for common typos, numeric formatting, and acceptable answer variants. 3. For multiple choice and true/false, ensure options are randomized where appropriate and that selection state is managed via Zustand. 4. Integrate answer validation and scoring logic for each question, updating the quiz state and persistent storage via Dexie/IndexedDB. 5. Provide clear user feedback for correct/incorrect answers and validation errors. 6. Ensure accessibility for all question types, including keyboard navigation and screen reader support. 7. Update the QuestionRenderer to support seamless navigation and state management for the full set of 21 questions.",
+        "testStrategy": "1. Manually test each question (Q11-Q21) for correct rendering, input handling, and validation logic. 2. Simulate user flows: answer all questions, submit, and verify that scoring and feedback are accurate. 3. Test edge cases for text entry (e.g., typos, case sensitivity, numeric input variants) and change calculation (e.g., currency formatting, rounding). 4. Confirm that answers and progress persist across sessions via IndexedDB. 5. Verify accessibility compliance for all new question components. 6. Perform regression testing to ensure Q1-Q10 functionality is unaffected.",
+        "status": "pending",
+        "dependencies": [
+          2,
+          3,
+          5
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Implement Quiz Navigation and Progress Tracking System",
+        "description": "Develop the quiz navigation system with progress tracking (progress pills 01-21), question navigation controls, and state management for question progression.",
+        "details": "1. Design and implement a ProgressPills component that visually represents each of the 21 quiz questions as clickable pills, highlighting the current question and indicating completed/incomplete status. 2. Create navigation controls (Next, Previous, Jump to Question) that allow users to move between questions, ensuring navigation state is synchronized with the quiz state in Zustand. 3. Integrate navigation logic with the QuestionRenderer system so that selecting a pill or using navigation buttons updates the displayed question and progress state. 4. Ensure that navigation is disabled when validation or completion rules require it (e.g., cannot proceed without answering). 5. Persist navigation and progress state using IndexedDB via Dexie, so user progress is retained across sessions. 6. Ensure accessibility for all navigation controls and pills (keyboard navigation, ARIA labels). 7. Coordinate with the rendering and validation logic for Q1-Q21 to ensure seamless quiz flow and accurate progress tracking.",
+        "testStrategy": "1. Manually test navigation between all 21 questions using pills and navigation buttons, verifying that the correct question is displayed and progress is accurately tracked. 2. Simulate quiz flows: answer questions in order and out of order, ensuring state updates and navigation restrictions are enforced as specified. 3. Refresh the page mid-quiz and confirm that progress and navigation state persist. 4. Test keyboard accessibility and screen reader compatibility for all navigation elements. 5. Verify that navigation is blocked when required (e.g., unanswered required questions). 6. Confirm integration with Zustand and Dexie for state and persistence.",
+        "status": "pending",
+        "dependencies": [
+          2,
+          3,
+          5,
+          6
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Implement Scoring System, Results Summary Screen, and Completion Flow",
+        "description": "Develop the scoring logic, results summary UI, final assessment outcome display, and ensure results are persisted upon quiz completion.",
+        "details": "1. Implement a scoring system in the quiz state management (Zustand) that calculates the total score based on user answers for all 21 questions, supporting different question types and partial credit where applicable. 2. Create a results summary screen that displays each question with correct/incorrect indicators, the user's answer, and the correct answer. 3. Show the user's total score and a final assessment outcome (e.g., pass/fail or proficiency level) based on configurable thresholds. 4. Integrate a completion flow: when the user submits the final answer, trigger score calculation, transition to the results summary, and persist the attempt, answers, and score to IndexedDB via Dexie. 5. Ensure results can be retrieved for review and reporting. 6. Handle edge cases such as incomplete quizzes and data persistence failures gracefully, providing user feedback.",
+        "testStrategy": "1. Simulate quiz completion with various answer patterns (all correct, all incorrect, mixed, partial completion) and verify that scores, indicators, and outcomes are accurate. 2. Confirm that the results summary displays correct/incorrect status, user answers, and correct answers for each question. 3. Test that the total score and outcome logic match the configured thresholds. 4. Verify that quiz attempts, answers, and scores are correctly persisted and can be retrieved from IndexedDB. 5. Test error handling for persistence failures and incomplete submissions. 6. Perform UI/UX review to ensure clarity and accessibility of the results summary screen.",
+        "status": "pending",
+        "dependencies": [
+          2,
+          3,
+          5,
+          6,
+          7
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Implement CSV Export and Student Reset Functionality for Teachers",
+        "description": "Develop a CSV export system for teachers to download student quiz results, including student ID, timestamp, all answers, and final score, and add a 'Start New Student' reset feature.",
+        "details": "1. Design and implement a React component (e.g., ExportCSV) that gathers all relevant student quiz results from persistent storage (IndexedDB via Dexie) and formats them into a CSV string. The CSV should include columns for student ID, timestamp, each question's answer (Q1-Q21), and the final score. 2. Use JavaScript's Blob API to generate the CSV file and trigger a download via a dynamically created anchor element, ensuring proper cleanup after download. 3. Integrate the export functionality into the teacher's dashboard or results management UI, providing a clear 'Export Results' button. 4. Implement the 'Start New Student' reset feature, which clears the current quiz state and prepares the system for a new student session, ensuring no residual data persists. 5. Ensure robust error handling for export and reset actions, and provide user feedback (e.g., success or error messages). 6. Follow accessibility best practices for all UI elements involved. 7. Consider extensibility for future export formats or additional data fields.",
+        "testStrategy": "1. Populate the system with multiple student quiz attempts, each with varied answers and scores. 2. Trigger the CSV export and verify that the downloaded file contains accurate headers and data for all students, with correct formatting for each field. 3. Open the CSV in spreadsheet software to confirm data integrity and readability. 4. Test the 'Start New Student' reset by completing a quiz, invoking the reset, and verifying that all quiz state and answers are cleared for the next session. 5. Simulate error scenarios (e.g., no data to export, storage access issues) and confirm that appropriate error messages are shown. 6. Conduct accessibility checks on export and reset controls.",
+        "status": "pending",
+        "dependencies": [
+          2,
+          3,
+          8
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Implement Comprehensive Accessibility Features and WCAG-AA Compliance",
+        "description": "Integrate accessibility features across the application, including keyboard navigation, screen reader support, ARIA labeling, and full compliance with WCAG 2.1/2.2 Level AA standards to ensure equitable access for students with disabilities.",
+        "details": "1. Audit all UI components and flows (including quiz navigation, question components, results, and export features) for accessibility gaps using tools like axe, Lighthouse, and manual screen reader testing. 2. Implement robust keyboard navigation for all interactive elements (e.g., quiz navigation pills, buttons, drag-and-drop zones), ensuring logical tab order, visible focus indicators, and support for keyboard-only operation (WCAG 2.1.1). 3. Add ARIA roles, states, and properties to all custom widgets and dynamic content, including live regions for feedback and status updates. 4. Provide meaningful alt text for all images and icons, and ensure all form fields and controls have clear, programmatically associated labels (WCAG 1.1.1, 1.3.1). 5. Ensure color contrast ratios meet or exceed 4.5:1 for text and interactive elements (WCAG 1.4.3), and support text resizing up to 200% without loss of content or functionality (WCAG 1.4.4). 6. For drag-and-drop interactions, implement accessible alternatives (e.g., keyboard controls, descriptive instructions, ARIA live feedback). 7. Add skip navigation links and clear heading structure for screen reader users (WCAG 2.4.1/2.4.6). 8. Ensure all instructional videos or audio have captions and/or transcripts. 9. Document accessibility features and provide guidance for teachers and students. 10. Validate compliance using WCAG checklists and, if possible, external accessibility audits.",
+        "testStrategy": "1. Use automated accessibility testing tools (axe, Lighthouse) to scan all app screens for WCAG-AA violations. 2. Manually test all interactive elements with keyboard only, verifying logical navigation, focus management, and operation without a mouse. 3. Test with major screen readers (NVDA, VoiceOver, JAWS) to confirm correct ARIA labeling, announcements, and navigation. 4. Check color contrast and text resizing using browser tools and accessibility extensions. 5. Validate that all images, icons, and controls have descriptive alt text or labels. 6. Simulate quiz flows with accessibility features enabled, including drag-and-drop alternatives. 7. Review compliance against a WCAG 2.1/2.2 Level AA checklist and document any exceptions or limitations. 8. Solicit feedback from users with disabilities, if possible, and address reported issues.",
+        "status": "pending",
+        "dependencies": [
+          2,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "Implement Offline Functionality and Service Worker for Complete Offline Operation",
+        "description": "Enable the application to function fully offline after the initial load by implementing a service worker, robust caching strategies, and an offline-first architecture.",
+        "details": "1. Integrate a service worker using Workbox or Vite PWA plugin to precache all essential assets (HTML, JS, CSS, images, fonts) and dynamically cache API/data requests required for quiz operation. 2. Configure the service worker to serve cached assets and data when offline, ensuring the app shell and all quiz flows (navigation, answering, results, export) are available without network connectivity. 3. Implement cache versioning and update strategies to handle new deployments and stale data. 4. Ensure all persistent data (student attempts, answers, scores) is stored in IndexedDB via Dexie, and that all read/write operations are routed through local storage first, syncing with the server only when online. 5. Provide user feedback for offline/online status and sync progress, and handle conflict resolution for data modified offline. 6. Audit the app for any network dependencies that could break offline operation and refactor as needed. 7. Document the offline architecture, caching strategies, and service worker update flow for maintainability.",
+        "testStrategy": "1. Simulate offline mode in the browser (DevTools) and verify that the app loads, all quiz features (navigation, answering, scoring, results, export) work as expected, and no network requests fail. 2. Test first load (online) and subsequent loads (offline) to confirm assets and data are served from cache. 3. Complete a quiz, export results, and reset student state while offline, then reconnect and verify data syncs correctly. 4. Test service worker updates by deploying a new version and confirming cache invalidation and update prompts. 5. Use Lighthouse and Workbox tools to audit offline readiness and service worker coverage. 6. Manually test edge cases: clearing cache, partial updates, and conflict scenarios.",
+        "status": "pending",
+        "dependencies": [
+          1,
+          2,
+          3
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Set Up Testing Framework and Achieve 80% Coverage with Jest, React Testing Library, and Cypress",
+        "description": "Establish a robust testing framework using Jest and React Testing Library for unit and integration tests, and Cypress for end-to-end (E2E) tests, targeting at least 80% code coverage as per requirements.",
+        "details": "1. Install and configure Jest, React Testing Library, and Cypress as dev dependencies. 2. Set up Jest with a custom configuration (jest.config.js) to enable code coverage collection, jsdom environment, and integration with React Testing Library via a setup file (e.g., jest.setup.js importing '@testing-library/jest-dom'). 3. Write unit tests for all React components, focusing on rendering, props, and state logic, especially for interactive quiz components (Q1-Q10). 4. Implement integration tests for drag-and-drop and sorting functionality using React Testing Library, simulating user interactions and validating state updates. 5. Configure Cypress for E2E testing, covering full quiz flows: navigation, answering, validation, scoring, results, and CSV export. 6. Add scripts to package.json for running unit, integration, and E2E tests, and for generating coverage reports. 7. Ensure test coverage reports are generated and enforce a minimum of 80% coverage via Jest configuration. 8. Document testing conventions and folder structure for maintainability.",
+        "testStrategy": "1. Run all Jest and React Testing Library tests, verifying that unit and integration tests pass and that coverage reports show at least 80% coverage. 2. Execute Cypress E2E tests to confirm that all major user flows (quiz navigation, answering, drag-and-drop, results, export) work as expected. 3. Manually review coverage reports to identify and address any untested code paths. 4. Validate that test scripts in package.json work as intended and that CI/CD pipelines (if present) fail if coverage drops below 80%.",
+        "status": "pending",
+        "dependencies": [
+          5
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Optimize Performance for 2017-era Windows Laptops: Bundle Optimization, Lazy Loading, and Monitoring",
+        "description": "Implement advanced performance optimizations to ensure the application loads in ≤3s and maintains drag latency ≤16ms per frame on 2017-era Windows laptops, including bundle size reduction, lazy loading, and real-time performance monitoring.",
+        "details": "1. Analyze current bundle size using tools like Webpack Bundle Analyzer or Vite's built-in analyzer, and identify large dependencies or code paths suitable for code splitting. 2. Implement code splitting and lazy loading for heavy components using React.lazy and Suspense, ensuring that only essential code is loaded initially (e.g., defer loading of results summary, export features, and teacher tools until needed). 3. Optimize third-party library imports by using selective imports and tree shaking, and replace heavy libraries with lighter alternatives where possible. 4. Apply memoization (React.memo, useMemo, useCallback) to prevent unnecessary re-renders, especially in frequently updated components such as quiz navigation and drag-and-drop zones. 5. Profile and optimize drag-and-drop interactions to ensure per-frame latency does not exceed 16ms, using React DevTools and browser performance profiling. 6. Integrate real-time performance monitoring (e.g., Web Vitals, custom metrics) to track initial load time and drag latency, and surface warnings if thresholds are exceeded. 7. Document all optimizations and provide guidance for future contributors on maintaining performance targets.",
+        "testStrategy": "1. Measure initial load time on a 2017-era Windows laptop using Chrome/Edge in incognito mode and a throttled network (Fast 3G/4G), verifying it is ≤3s. 2. Use browser performance tools (Performance tab, React Profiler) to measure drag-and-drop frame latency, confirming it remains ≤16ms per frame during rapid interactions. 3. Validate that lazy-loaded components do not impact initial load and are loaded only when needed. 4. Confirm bundle size reduction by comparing pre- and post-optimization builds. 5. Simulate typical user flows and monitor real-time performance metrics, ensuring alerts are triggered if thresholds are breached. 6. Review documentation for clarity and completeness.",
+        "status": "pending",
+        "dependencies": [
+          1,
+          2,
+          4
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "Establish Production Deployment Build System and Documentation",
+        "description": "Set up the production build process, prepare the dist/ folder structure for network share deployment, and create comprehensive deployment instructions and documentation for teachers.",
+        "details": "1. Configure the build tool (e.g., Vite, Webpack) to generate a production-optimized build, ensuring all assets are minified and hashed for cache busting. 2. Define and document the output structure in the dist/ folder, organizing files for easy deployment to a network share (e.g., index.html, static assets, manifest, service worker). 3. Create a deployment script or step-by-step instructions for building and copying the dist/ folder to the designated network location, including any required environment variable settings or configuration files. 4. Write clear, teacher-friendly documentation (PDF or Markdown) covering: prerequisites (e.g., network access, permissions), deployment steps, troubleshooting tips, and contact information for support. 5. Include a technical appendix for IT staff detailing build commands, environment setup, and folder structure rationale. 6. Ensure documentation is versioned and stored alongside the project source code for future updates. 7. Review and update documentation based on feedback from a pilot deployment.",
+        "testStrategy": "1. Run the production build process and verify that the dist/ folder contains all necessary files, correctly structured for network share deployment. 2. Follow the deployment instructions as written to deploy the application to a test network share, confirming that teachers can access and launch the app without errors. 3. Validate that all static assets load correctly and offline functionality (if implemented) works as expected. 4. Solicit feedback from a small group of teachers and IT staff on the clarity and completeness of the documentation, revising as needed. 5. Confirm that the documentation is accessible and up to date in the project repository.",
+        "status": "pending",
+        "dependencies": [
+          11,
+          13
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "Final QA Testing and Classroom Pilot Preparation",
+        "description": "Conduct comprehensive final QA testing, including accessibility (axe-core), cross-browser compatibility, and performance validation, and prepare for a classroom pilot with two classes. Address all identified bugs and performance issues prior to pilot deployment.",
+        "details": "1. Execute a full suite of automated and manual QA tests, ensuring all functional requirements are met and no critical bugs remain. 2. Perform automated accessibility testing using axe-core (integrated with your test framework) to scan for WCAG 2.1/2.2 AA violations, and supplement with manual accessibility checks for keyboard navigation, screen reader compatibility, and ARIA labeling. 3. Conduct cross-browser compatibility testing on Chrome, Edge, and Firefox (minimum), focusing on 2017-era Windows laptops, and document any rendering or functional discrepancies. 4. Validate performance benchmarks (≤3s load, ≤16ms drag latency) on target hardware. 5. Log, triage, and resolve all bugs and performance issues found during testing. 6. Prepare classroom pilot materials: deployment instructions, teacher guides, and a feedback collection plan for two pilot classes. 7. Coordinate with pilot teachers to schedule and support the classroom rollout.",
+        "testStrategy": "- Run all automated test suites (unit, integration, E2E) and confirm 100% pass rate with no regressions. - Use axe-core to scan all app screens for accessibility violations, and manually verify keyboard and screen reader access. - Test the application on Chrome, Edge, and Firefox on 2017-era Windows laptops, confirming consistent behavior and appearance. - Measure load times and drag latency, ensuring performance targets are met. - Verify that all identified bugs and performance issues are resolved. - Review pilot preparation materials with teachers and conduct a dry run of the deployment and feedback process.",
+        "status": "pending",
+        "dependencies": [
+          10,
+          12,
+          13,
+          14
+        ],
+        "priority": "low",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-08-05T08:26:21.073Z",
+      "updated": "2025-08-05T09:30:42.791Z",
+      "description": "Tasks for master context"
+    }
+  }
+}
