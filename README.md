@@ -29,30 +29,37 @@ A React-based interactive assessment tool for Year 3 students to practice money-
 ## 📦 Project Structure
 
 ```
-year3-money-assessment/
-├── src/
-│   ├── components/     # React components
-│   ├── pages/         # Page components (Home, Quiz, Students)
-│   ├── stores/        # Zustand state management
+Year 3 Maths/
+├── src/                    # React application source
+│   ├── components/         # React components
+│   ├── pages/             # Page components (Home, Quiz, Students)
+│   ├── stores/            # Zustand state management
 │   │   ├── quizStore.ts      # Quiz state management
 │   │   ├── studentStore.ts   # Student data management
 │   │   └── persistence.ts    # Database integration layer
-│   ├── db/            # Database layer
+│   ├── db/                # Database layer
 │   │   └── database.ts       # Dexie IndexedDB setup
-│   ├── hooks/         # Custom React hooks
-│   ├── types/         # TypeScript type definitions
-│   ├── utils/         # Utility functions
-│   ├── assets/        # Static assets (images, icons)
-│   ├── App.tsx        # Main application component with navigation
-│   ├── main.tsx       # Application entry point with RouterProvider
-│   ├── routes.tsx     # React Router configuration
-│   └── index.css      # Global styles with Tailwind
-├── public/            # Static files
-├── dist/              # Production build output
-├── vite.config.ts     # Vite configuration with PWA
-├── tailwind.config.ts # Tailwind CSS configuration
-├── tsconfig.json      # TypeScript configuration
-└── package.json       # Dependencies and scripts
+│   ├── hooks/             # Custom React hooks
+│   ├── types/             # TypeScript type definitions
+│   ├── utils/             # Utility functions
+│   ├── assets/            # Static assets (images, icons)
+│   ├── App.tsx            # Main application component with navigation
+│   ├── main.tsx           # Application entry point with RouterProvider
+│   ├── routes.tsx         # React Router configuration
+│   └── index.css          # Global styles with Tailwind
+├── public/                # Static files
+├── dist/                  # Production build output
+├── Planning/              # Project planning and screenshots
+├── Static/                # Static assets (currency images)
+├── .github/               # GitHub Actions and templates
+├── .cursor/               # Cursor IDE configuration
+├── .taskmaster/           # Task management system
+├── vite.config.ts         # Vite configuration with PWA
+├── tailwind.config.ts     # Tailwind CSS configuration
+├── tsconfig.json          # TypeScript configuration
+├── package.json           # Dependencies and scripts
+├── README.md              # Project documentation
+└── Year3_Money_Assessment_PRD.md  # Product requirements document
 ```
 
 ## 🚀 Getting Started Guide
@@ -66,7 +73,7 @@ year3-money-assessment/
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/dsuth10/year3-money-assessment.git
    cd year3-money-assessment
    ```
 
