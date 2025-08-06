@@ -1,5 +1,9 @@
 import { useQuizStore } from '../stores/quizStore'
 import { useStudentStore } from '../stores/studentStore'
+import CurrencyTest from '../components/CurrencyTest'
+import DraggableCurrencyTest from '../components/currency/DraggableCurrencyTest'
+import DragAndDropTest from '../components/currency/DragAndDropTest'
+import AccessibilityTest from '../components/currency/AccessibilityTest'
 
 function Home() {
   const { isQuizActive, getProgress } = useQuizStore()
@@ -56,6 +60,30 @@ function Home() {
               Manage Students
             </button>
           </div>
+        </div>
+      </div>
+
+      <div className="bg-white shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6">
+          <CurrencyTest />
+        </div>
+      </div>
+
+      <div className="bg-white shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6">
+          <DraggableCurrencyTest />
+        </div>
+      </div>
+
+      <div className="bg-white shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6">
+          <DragAndDropTest />
+        </div>
+      </div>
+
+      <div className="bg-white shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6">
+          <AccessibilityTest />
         </div>
       </div>
     </div>

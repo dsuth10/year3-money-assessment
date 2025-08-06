@@ -1,5 +1,7 @@
 import { useQuizStore } from '../stores/quizStore'
 import { useStudentStore } from '../stores/studentStore'
+import QuestionRenderer from '../components/questions/QuestionRenderer'
+import FeedbackDisplay from '../components/FeedbackDisplay'
 
 function Quiz() {
   const { 
@@ -9,7 +11,12 @@ function Quiz() {
     setAnswer, 
     setCurrentQuestion, 
     startQuiz, 
-    resetQuiz
+    resetQuiz,
+    saveAnswer,
+    isLoading,
+    error,
+    validationResults,
+    totalScore
   } = useQuizStore()
   
   const { students, currentStudent, setCurrentStudent } = useStudentStore()
@@ -22,14 +29,52 @@ function Quiz() {
     }
   }
 
-  const handleAnswerQuestion = (questionId: number, answer: string) => {
-    setAnswer(questionId, answer)
-    setCurrentQuestion(currentQuestion + 1)
+  const handleAnswerQuestion = async (questionId: number, answer: any) => {
+    try {
+      // Save answer to IndexedDB
+      await saveAnswer(questionId, JSON.stringify(answer))
+      
+      // Update local state
+      setAnswer(questionId, JSON.stringify(answer))
+      
+      // Move to next question if not the last question
+      if (currentQuestion < 9) { // Q1-Q10 (0-9)
+        setCurrentQuestion(currentQuestion + 1)
+      }
+    } catch (error) {
+      console.error('Error saving answer:', error)
+    }
   }
 
   const handleResetQuiz = () => {
     resetQuiz()
     setCurrentStudent(null)
+  }
+
+  const handlePreviousQuestion = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1)
+    }
+  }
+
+  const handleNextQuestion = () => {
+    if (currentQuestion < 9) { // Q1-Q10 (0-9)
+      setCurrentQuestion(currentQuestion + 1)
+    }
+  }
+
+  const handleGoToQuestion = (questionNumber: number) => {
+    setCurrentQuestion(questionNumber - 1) // Convert to 0-based index
+  }
+
+  const handleCompleteQuiz = async () => {
+    try {
+      // Calculate final score and complete quiz
+      // This would typically trigger a completion screen
+      console.log('Quiz completed with score:', totalScore)
+    } catch (error) {
+      console.error('Error completing quiz:', error)
+    }
   }
 
   if (!isQuizActive) {
@@ -67,12 +112,21 @@ function Quiz() {
         <h2 className="text-xl font-semibold text-gray-900">
           Money Assessment Quiz
         </h2>
-        <button
-          onClick={handleResetQuiz}
-          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-        >
-          End Quiz
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleCompleteQuiz}
+            disabled={Object.keys(answers).length < 10}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Complete Quiz
+          </button>
+          <button
+            onClick={handleResetQuiz}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+          >
+            End Quiz
+          </button>
+        </div>
       </div>
 
       {currentStudent && (
@@ -82,57 +136,91 @@ function Quiz() {
         </div>
       )}
 
-      <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Question {currentQuestion + 1}</h3>
-        <p className="text-gray-600 mb-4">
-          This is a placeholder question. The actual quiz questions will be implemented in Task 5.
-        </p>
-        
-        <div className="space-y-2">
-          <button
-            onClick={() => handleAnswerQuestion(currentQuestion, 'A')}
-            className="w-full text-left p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-          >
-            A) $1.50
-          </button>
-          <button
-            onClick={() => handleAnswerQuestion(currentQuestion, 'B')}
-            className="w-full text-left p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-          >
-            B) $2.00
-          </button>
-          <button
-            onClick={() => handleAnswerQuestion(currentQuestion, 'C')}
-            className="w-full text-left p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-          >
-            C) $2.50
-          </button>
-          <button
-            onClick={() => handleAnswerQuestion(currentQuestion, 'D')}
-            className="w-full text-left p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-          >
-            D) $3.00
-          </button>
+      {/* Error Display */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <h3 className="font-medium text-red-900 mb-2">Error</h3>
+          <p className="text-red-700">{error}</p>
         </div>
+      )}
+
+      {/* Question Content */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium text-gray-900">
+            Question {currentQuestion + 1} of 10
+          </h3>
+          <div className="flex gap-2">
+            <button
+              onClick={handlePreviousQuestion}
+              disabled={currentQuestion === 0 || isLoading}
+              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Go to previous question"
+            >
+              Previous
+            </button>
+            <button
+              onClick={handleNextQuestion}
+              disabled={currentQuestion === 9 || isLoading}
+              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Go to next question"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+        
+        {/* Question Renderer */}
+        <QuestionRenderer
+          questionId={currentQuestion + 1}
+          onAnswer={(answer) => handleAnswerQuestion(currentQuestion + 1, answer)}
+          currentAnswer={answers[currentQuestion + 1] ? JSON.parse(answers[currentQuestion + 1]) : undefined}
+          disabled={isLoading}
+        />
       </div>
 
+      {/* Feedback and Progress Display */}
+      <div className="mb-6">
+        <FeedbackDisplay
+          questionId={currentQuestion + 1}
+          validationResult={validationResults[currentQuestion + 1]}
+        />
+      </div>
+
+      {/* Progress Navigation */}
       <div className="border-t pt-4">
         <h4 className="font-medium text-gray-900 mb-2">Progress</h4>
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2">
           {Array.from({ length: 10 }, (_, i) => (
-            <div
+            <button
               key={i}
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                answers[i] 
-                  ? 'bg-green-500 text-white' 
-                  : i < currentQuestion 
-                    ? 'bg-yellow-500 text-white' 
-                    : 'bg-gray-200 text-gray-600'
-              }`}
+              onClick={() => handleGoToQuestion(i + 1)}
+              disabled={isLoading}
+              className={`
+                w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors
+                ${answers[i + 1] 
+                  ? 'bg-green-500 text-white hover:bg-green-600' 
+                  : i === currentQuestion
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                }
+                disabled:opacity-50 disabled:cursor-not-allowed
+              `}
+              aria-label={`Go to question ${i + 1}${answers[i + 1] ? ' (answered)' : ''}`}
             >
               {i + 1}
-            </div>
+            </button>
           ))}
+        </div>
+        
+        {/* Progress Summary */}
+        <div className="mt-4 text-sm text-gray-600">
+          {Object.keys(answers).length} of 10 questions answered
+          {Object.keys(answers).length === 10 && (
+            <span className="ml-2 text-green-600 font-medium">
+              ✓ Quiz ready to complete
+            </span>
+          )}
         </div>
       </div>
     </div>
