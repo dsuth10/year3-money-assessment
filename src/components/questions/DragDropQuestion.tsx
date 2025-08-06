@@ -1,24 +1,31 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   DndContext,
-  type DragEndEvent,
   DragOverlay,
-  type DragStartEvent,
   PointerSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
   closestCenter,
 } from '@dnd-kit/core';
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import {
   SortableContext,
-  verticalListSortableKeyboardCoordinates,
+  sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import DraggableCurrencyItem from '../currency/DraggableCurrencyItem';
 import CurrencyDropZone from '../currency/CurrencyDropZone';
 import type { DragDropQuestionProps } from '../../types/questions';
-import type { CurrencyItem } from '../../types/currency';
+// Define CurrencyItem interface locally to avoid import issues
+interface CurrencyItem {
+  id: string;
+  value: number;
+  name: string;
+  type: 'coin' | 'note';
+  image: string;
+  imagePath: string;
+}
 import { useQuizStore } from '../../stores/quizStore';
 
 const DragDropQuestion: React.FC<DragDropQuestionProps> = ({
@@ -51,7 +58,7 @@ const DragDropQuestion: React.FC<DragDropQuestionProps> = ({
       },
     }),
     useSensor(KeyboardSensor, {
-      coordinateGetter: verticalListSortableKeyboardCoordinates,
+      coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 

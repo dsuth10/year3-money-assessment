@@ -1,4 +1,17 @@
-import type { CurrencyData } from '../types/currency';
+// Define CurrencyData interface locally to avoid import issues
+interface CurrencyItem {
+  id: string;
+  value: number;
+  name: string;
+  type: 'coin' | 'note';
+  image: string;
+  imagePath: string;
+}
+
+interface CurrencyData {
+  coins: CurrencyItem[];
+  notes: CurrencyItem[];
+}
 
 // Import all currency images from Static/Currency folder
 // import fiveCentCoin from '../../Static/Currency/Five Cent Coin.png';

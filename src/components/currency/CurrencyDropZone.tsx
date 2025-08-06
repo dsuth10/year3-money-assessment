@@ -1,6 +1,14 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { CurrencyItem } from '../../types/currency';
+// Define CurrencyItem interface locally to avoid import issues
+interface CurrencyItem {
+  id: string;
+  value: number;
+  name: string;
+  type: 'coin' | 'note';
+  image: string;
+  imagePath: string;
+}
 
 interface CurrencyDropZoneProps {
   id: string;

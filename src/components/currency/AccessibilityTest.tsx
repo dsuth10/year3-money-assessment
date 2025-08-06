@@ -3,7 +3,15 @@ import { DndContext, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import DraggableCurrencyItem from './DraggableCurrencyItem';
 import CurrencyDropZone from './CurrencyDropZone';
 import { getAllCurrency } from '../../data/currency';
-import { CurrencyItem } from '../../types/currency';
+// Define CurrencyItem interface locally to avoid import issues
+interface CurrencyItem {
+  id: string;
+  value: number;
+  name: string;
+  type: 'coin' | 'note';
+  image: string;
+  imagePath: string;
+}
 
 const AccessibilityTest: React.FC = () => {
   const allCurrency = getAllCurrency();

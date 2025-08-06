@@ -1,4 +1,12 @@
-import { CurrencyItem } from './currency';
+// Define CurrencyItem interface locally to avoid import issues
+interface CurrencyItem {
+  id: string;
+  value: number;
+  name: string;
+  type: 'coin' | 'note';
+  image: string;
+  imagePath: string;
+}
 
 export interface QuestionProps {
   questionId: number;

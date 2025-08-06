@@ -1,9 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
 import Landing from "./pages/Landing";
-import Home from "./pages/Home";
-import Quiz from "./pages/Quiz";
-import Students from "./pages/Students";
+// import Home from "./pages/Home";
+// import Quiz from "./pages/Quiz";
+// import Students from "./pages/Students";
 
 export const router = createBrowserRouter([
   {
@@ -11,9 +11,10 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       { path: "", element: <Landing /> },
-      { path: "home", element: <Home /> },
-      { path: "quiz", element: <Quiz /> },
-      { path: "students", element: <Students /> },
+      // Temporarily comment out other routes to test landing page
+      // { path: "home", element: <Home /> },
+      // { path: "quiz", element: <Quiz /> },
+      // { path: "students", element: <Students /> },
     ],
   },
 ]); 

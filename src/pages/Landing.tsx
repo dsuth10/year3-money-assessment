@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStudentStore } from '../stores/studentStore';
+// import { useStudentStore } from '../stores/studentStore';
 
 interface LandingProps {
   onStudentSet?: (studentId: string) => void;
@@ -15,7 +15,8 @@ const Landing: React.FC<LandingProps> = ({ onStudentSet }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   
-  const { addStudent, getStudentByName, setCurrentStudent, isLoading } = useStudentStore();
+  // Temporary test version
+  const isLoading = false;
 
   // Autofocus the input on mount
   useEffect(() => {
@@ -41,31 +42,8 @@ const Landing: React.FC<LandingProps> = ({ onStudentSet }) => {
     setError('');
 
     try {
-      // Check if student already exists
-      let student = await getStudentByName(trimmedName);
-      
-      if (!student) {
-        // Create new student
-        const newStudent = {
-          id: `student_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          name: trimmedName,
-          grade: 'Year 3',
-          totalAttempts: 0
-        };
-        
-        await addStudent(newStudent);
-        student = newStudent;
-      }
-
-      // Set as current student
-      setCurrentStudent(student);
-      
-      // Call callback if provided
-      if (onStudentSet) {
-        onStudentSet(student.id);
-      }
-
-      // Redirect to quiz page
+      // Temporary test version - just redirect
+      console.log('Student name:', trimmedName);
       navigate('/quiz');
       
     } catch (err) {

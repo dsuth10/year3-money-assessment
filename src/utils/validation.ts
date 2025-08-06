@@ -1,5 +1,18 @@
-import { CurrencyItem } from '../types/currency';
-import { QuestionValidationResult } from '../types/questions';
+// Define interfaces locally to avoid import issues
+interface CurrencyItem {
+  id: string;
+  value: number;
+  name: string;
+  type: 'coin' | 'note';
+  image: string;
+  imagePath: string;
+}
+
+interface QuestionValidationResult {
+  isCorrect: boolean;
+  feedback: string;
+  score: number;
+}
 
 // Validation functions for different question types
 

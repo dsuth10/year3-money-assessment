@@ -1,26 +1,36 @@
 import React, { useState, useCallback } from 'react';
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  KeyboardSensor,
-  useSensor,
-  useSensors,
-  closestCenter,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortableKeyboardCoordinates,
-  sortableKeyboardCoordinates,
-} from '@dnd-kit/sortable';
-import {
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import { SortingQuestionProps, CurrencyItem } from '../../types/questions';
+// Temporarily comment out @dnd-kit imports for testing
+// import {
+//   DndContext,
+//   DragOverlay,
+//   PointerSensor,
+//   KeyboardSensor,
+//   useSensor,
+//   useSensors,
+//   closestCenter,
+// } from '@dnd-kit/core';
+// import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+// import {
+//   SortableContext,
+//   verticalListSortableKeyboardCoordinates,
+//   sortableKeyboardCoordinates,
+// } from '@dnd-kit/sortable';
+// import {
+//   useSortable,
+// } from '@dnd-kit/sortable';
+// import { CSS } from '@dnd-kit/utilities';
+// import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { SortingQuestionProps } from '../../types/questions';
+
+// Define CurrencyItem interface locally to avoid import issues
+interface CurrencyItem {
+  id: string;
+  value: number;
+  name: string;
+  type: 'coin' | 'note';
+  image: string;
+  imagePath: string;
+}
 
 interface SortableCurrencyItemProps {
   currency: CurrencyItem;
