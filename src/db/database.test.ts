@@ -1,362 +1,318 @@
-import { db, dbUtils, type Student, type StudentAttempt, type Answer, type QuizData } from './database';
+import { db, dbUtils, type Answer, type StudentAttempt } from './database';
 
 /**
- * Database Test Suite
+ * Database Schema Migration and Status Persistence Tests
  * 
- * This file contains comprehensive tests for the Dexie 4 database implementation.
- * Tests cover all CRUD operations, schema validation, error handling, and performance features.
- * 
- * To run these tests:
- * 1. Ensure the database is accessible in the browser environment
- * 2. Call the test functions and check console output
- * 3. Verify that all operations complete successfully
+ * These tests verify that the updated Dexie schema correctly handles:
+ * - Schema version migration from v1 to v2
+ * - Status field persistence and retrieval
+ * - Backward compatibility with existing data
+ * - New status-based query functionality
  */
 
-// Test data
-const testStudent: Omit<Student, 'totalAttempts'> = {
-  id: 'test-student-1',
-  name: 'Test Student',
-  grade: '3A'
-};
-
-const testQuizData: QuizData = {
-  id: 'money-quiz-1',
-  title: 'Money Assessment Quiz',
-  totalQuestions: 5,
-  questions: [
-    {
-      id: 1,
-      text: 'What is the value of 2 dollars and 50 cents?',
-      type: 'multiple-choice',
-      options: ['$2.50', '$2.05', '$2.15', '$2.25'],
-      correctAnswer: '$2.50'
-    },
-    {
-      id: 2,
-      text: 'How many quarters make $1.00?',
-      type: 'multiple-choice',
-      options: ['2', '3', '4', '5'],
-      correctAnswer: '4'
-    }
-  ]
-};
-
-const testAttempt: Omit<StudentAttempt, 'id'> = {
-  studentId: 'test-student-1',
-  quizId: 'money-quiz-1',
-  timestamp: Date.now(),
-  completed: false
-};
-
-const testAnswer: Omit<Answer, 'id'> = {
-  attemptId: 1, // Will be set after attempt creation
-  questionId: 1,
-  answer: '$2.50'
-};
-
-/**
- * Test Suite Functions
- */
-
-export async function runAllTests(): Promise<void> {
-  console.log('🧪 Starting Database Test Suite...');
-  
-  try {
-    // Clear existing data
+describe('Database Schema Migration and Status Persistence', () => {
+  beforeEach(async () => {
+    // Clear all data before each test
     await dbUtils.clearAllData();
-    console.log('✅ Database cleared successfully');
-
-    // Run all test categories
-    await testStudentOperations();
-    await testQuizDataOperations();
-    await testAttemptOperations();
-    await testAnswerOperations();
-    await testAdvancedQueries();
-    await testErrorHandling();
-    await testPerformanceFeatures();
-    await testSchemaValidation();
-
-    console.log('🎉 All tests passed successfully!');
-  } catch (error) {
-    console.error('❌ Test suite failed:', error);
-    throw error;
-  }
-}
-
-/**
- * Test Student CRUD Operations
- */
-async function testStudentOperations(): Promise<void> {
-  console.log('\n📚 Testing Student Operations...');
-
-  // Test adding student
-  const studentId = await dbUtils.addStudent(testStudent);
-  console.log('✅ Student added:', studentId);
-
-  // Test getting student
-  const retrievedStudent = await dbUtils.getStudent(studentId);
-  if (!retrievedStudent || retrievedStudent.name !== testStudent.name) {
-    throw new Error('Student retrieval failed');
-  }
-  console.log('✅ Student retrieved successfully');
-
-  // Test updating student
-  await dbUtils.updateStudent(studentId, { grade: '3B' });
-  const updatedStudent = await dbUtils.getStudent(studentId);
-  if (updatedStudent?.grade !== '3B') {
-    throw new Error('Student update failed');
-  }
-  console.log('✅ Student updated successfully');
-
-  // Test getting all students
-  const allStudents = await dbUtils.getAllStudents();
-  if (allStudents.length !== 1) {
-    throw new Error('Get all students failed');
-  }
-  console.log('✅ All students retrieved successfully');
-}
-
-/**
- * Test Quiz Data Operations
- */
-async function testQuizDataOperations(): Promise<void> {
-  console.log('\n📝 Testing Quiz Data Operations...');
-
-  // Test saving quiz data
-  const quizId = await dbUtils.saveQuizData(testQuizData);
-  console.log('✅ Quiz data saved:', quizId);
-
-  // Test getting quiz data
-  const retrievedQuiz = await dbUtils.getQuizData(quizId);
-  if (!retrievedQuiz || retrievedQuiz.title !== testQuizData.title) {
-    throw new Error('Quiz data retrieval failed');
-  }
-  console.log('✅ Quiz data retrieved successfully');
-}
-
-/**
- * Test Attempt Operations
- */
-async function testAttemptOperations(): Promise<void> {
-  console.log('\n🎯 Testing Attempt Operations...');
-
-  // Test creating attempt
-  const attemptId = await dbUtils.createAttempt(testAttempt);
-  console.log('✅ Attempt created:', attemptId);
-
-  // Test getting attempt by ID
-  const retrievedAttempt = await dbUtils.getAttemptById(attemptId);
-  if (!retrievedAttempt || retrievedAttempt.studentId !== testAttempt.studentId) {
-    throw new Error('Attempt retrieval failed');
-  }
-  console.log('✅ Attempt retrieved successfully');
-
-  // Test getting attempts by student
-  const studentAttempts = await dbUtils.getAttemptsByStudent(testAttempt.studentId);
-  if (studentAttempts.length !== 1) {
-    throw new Error('Get attempts by student failed');
-  }
-  console.log('✅ Student attempts retrieved successfully');
-
-  // Test updating attempt
-  await dbUtils.updateAttempt(attemptId, { completed: true, score: 85 });
-  const updatedAttempt = await dbUtils.getAttemptById(attemptId);
-  if (!updatedAttempt?.completed || updatedAttempt.score !== 85) {
-    throw new Error('Attempt update failed');
-  }
-  console.log('✅ Attempt updated successfully');
-
-  return attemptId;
-}
-
-/**
- * Test Answer Operations
- */
-async function testAnswerOperations(): Promise<void> {
-  console.log('\n💡 Testing Answer Operations...');
-
-  // Create a test attempt first
-  const attemptId = await dbUtils.createAttempt({
-    ...testAttempt,
-    studentId: 'test-student-2'
   });
 
-  // Test saving answer
-  const answerData = { ...testAnswer, attemptId };
-  const answerId = await dbUtils.saveAnswer(answerData);
-  console.log('✅ Answer saved:', answerId);
-
-  // Test getting answers by attempt
-  const answers = await dbUtils.getAnswersByAttempt(attemptId);
-  if (answers.length !== 1 || answers[0].answer !== testAnswer.answer) {
-    throw new Error('Get answers by attempt failed');
-  }
-  console.log('✅ Answers retrieved successfully');
-}
-
-/**
- * Test Advanced Query Operations
- */
-async function testAdvancedQueries(): Promise<void> {
-  console.log('\n🔍 Testing Advanced Queries...');
-
-  // Create test data for advanced queries
-  const studentId = 'test-student-3';
-  await dbUtils.addStudent({ id: studentId, name: 'Advanced Test Student', grade: '3C' });
-  
-  const attemptId = await dbUtils.createAttempt({
-    studentId,
-    quizId: 'money-quiz-1',
-    timestamp: Date.now(),
-    completed: true,
-    score: 90
+  afterAll(async () => {
+    // Clean up after all tests
+    await dbUtils.clearAllData();
   });
 
-  await dbUtils.saveAnswer({ attemptId, questionId: 1, answer: '$2.50' });
-  await dbUtils.saveAnswer({ attemptId, questionId: 2, answer: '4' });
+  describe('Schema Migration', () => {
+    test('should migrate existing answers to include status field', async () => {
+      // Create a test attempt
+      const attemptId = await dbUtils.createAttempt({
+        studentId: 'test-student',
+        quizId: 'test-quiz',
+        timestamp: Date.now(),
+        completed: false
+      });
 
-  // Test getAttemptWithAnswers
-  const attemptWithAnswers = await dbUtils.getAttemptWithAnswers(attemptId);
-  if (!attemptWithAnswers || attemptWithAnswers.answers.length !== 2) {
-    throw new Error('Get attempt with answers failed');
-  }
-  console.log('✅ Attempt with answers retrieved successfully');
+      // Save an answer without status (simulating old schema)
+      const answerId = await dbUtils.saveAnswer({
+        attemptId,
+        questionId: 1,
+        answer: 'test answer'
+      });
 
-  // Test getStudentProgress
-  const studentProgress = await dbUtils.getStudentProgress(studentId);
-  if (!studentProgress || studentProgress.attempts.length !== 1 || studentProgress.averageScore !== 90) {
-    throw new Error('Get student progress failed');
-  }
-  console.log('✅ Student progress retrieved successfully');
-}
-
-/**
- * Test Error Handling
- */
-async function testErrorHandling(): Promise<void> {
-  console.log('\n⚠️ Testing Error Handling...');
-
-  // Test invalid student data
-  try {
-    await dbUtils.addStudent({ id: '', name: '', grade: '' });
-    throw new Error('Should have thrown validation error');
-  } catch (error) {
-    console.log('✅ Validation error caught for invalid student data');
-  }
-
-  // Test invalid attempt data
-  try {
-    await dbUtils.createAttempt({
-      studentId: '',
-      quizId: '',
-      timestamp: -1,
-      completed: false
+      // Verify the answer was saved with default status
+      const answers = await dbUtils.getAnswersByAttempt(attemptId);
+      expect(answers).toHaveLength(1);
+      expect(answers[0].status).toBe('answered'); // Default status from migration
+      expect(answers[0].answer).toBe('test answer');
     });
-    throw new Error('Should have thrown validation error');
-  } catch (error) {
-    console.log('✅ Validation error caught for invalid attempt data');
-  }
 
-  // Test getting non-existent student
-  const nonExistentStudent = await dbUtils.getStudent('non-existent-id');
-  if (nonExistentStudent !== undefined) {
-    throw new Error('Should return undefined for non-existent student');
-  }
-  console.log('✅ Non-existent student handled correctly');
-}
+    test('should handle new answers with explicit status', async () => {
+      // Create a test attempt
+      const attemptId = await dbUtils.createAttempt({
+        studentId: 'test-student',
+        quizId: 'test-quiz',
+        timestamp: Date.now(),
+        completed: false
+      });
 
-/**
- * Test Performance Features
- */
-async function testPerformanceFeatures(): Promise<void> {
-  console.log('\n⚡ Testing Performance Features...');
+      // Save answers with different statuses
+      await dbUtils.saveAnswer({
+        attemptId,
+        questionId: 1,
+        answer: 'skipped answer',
+        status: 'skipped'
+      });
 
-  // Test cache functionality
-  const cacheStats = dbUtils.getCacheStats();
-  console.log('✅ Cache stats retrieved:', cacheStats);
+      await dbUtils.saveAnswer({
+        attemptId,
+        questionId: 2,
+        answer: 'submitted answer',
+        status: 'submitted'
+      });
 
-  // Test database stats
-  const dbStats = await dbUtils.getDatabaseStats();
-  if (typeof dbStats.students !== 'number' || typeof dbStats.attempts !== 'number') {
-    throw new Error('Database stats failed');
-  }
-  console.log('✅ Database stats retrieved:', dbStats);
+      // Verify answers were saved with correct statuses
+      const answers = await dbUtils.getAnswersByAttempt(attemptId);
+      expect(answers).toHaveLength(2);
+      
+      const skippedAnswer = answers.find(a => a.questionId === 1);
+      const submittedAnswer = answers.find(a => a.questionId === 2);
+      
+      expect(skippedAnswer?.status).toBe('skipped');
+      expect(submittedAnswer?.status).toBe('submitted');
+    });
+  });
 
-  // Test cache clearing
-  dbUtils.clearCache();
-  const clearedCacheStats = dbUtils.getCacheStats();
-  if (clearedCacheStats.size !== 0) {
-    throw new Error('Cache clearing failed');
-  }
-  console.log('✅ Cache cleared successfully');
-}
+  describe('Status Persistence', () => {
+    test('should persist and retrieve status with timestamps', async () => {
+      const attemptId = await dbUtils.createAttempt({
+        studentId: 'test-student',
+        quizId: 'test-quiz',
+        timestamp: Date.now(),
+        completed: false
+      });
 
-/**
- * Test Schema Validation
- */
-async function testSchemaValidation(): Promise<void> {
-  console.log('\n🔧 Testing Schema Validation...');
+      const timestamp = Date.now();
 
-  const validation = await dbUtils.validateSchema();
-  if (!validation.valid) {
-    throw new Error(`Schema validation failed: ${validation.errors.join(', ')}`);
-  }
-  console.log('✅ Schema validation passed');
-}
+      // Save answer with status and timestamp
+      await dbUtils.saveAnswer({
+        attemptId,
+        questionId: 1,
+        answer: 'test answer',
+        status: 'submitted'
+      });
 
-/**
- * Performance Benchmark Tests
- */
-export async function runPerformanceBenchmark(): Promise<void> {
-  console.log('\n🏃 Running Performance Benchmark...');
+      // Update status with timestamp
+      await dbUtils.updateAnswerStatus(attemptId, 1, 'submitted', timestamp);
 
-  const startTime = performance.now();
+      // Verify status and timestamp were persisted
+      const answers = await dbUtils.getAnswersByAttempt(attemptId);
+      const answer = answers.find(a => a.questionId === 1);
+      
+      expect(answer?.status).toBe('submitted');
+      expect(answer?.submittedAt).toBe(timestamp);
+    });
 
-  // Create multiple test records
-  const promises = [];
-  for (let i = 0; i < 10; i++) {
-    promises.push(
-      dbUtils.addStudent({
-        id: `benchmark-student-${i}`,
-        name: `Benchmark Student ${i}`,
-        grade: '3A'
-      })
-    );
-  }
+    test('should handle status updates correctly', async () => {
+      const attemptId = await dbUtils.createAttempt({
+        studentId: 'test-student',
+        quizId: 'test-quiz',
+        timestamp: Date.now(),
+        completed: false
+      });
 
-  await Promise.all(promises);
-  const endTime = performance.now();
+      // Save initial answer
+      await dbUtils.saveAnswer({
+        attemptId,
+        questionId: 1,
+        answer: 'initial answer',
+        status: 'pending'
+      });
 
-  console.log(`✅ Created 10 students in ${(endTime - startTime).toFixed(2)}ms`);
+      // Update status to skipped
+      const skipTimestamp = Date.now();
+      await dbUtils.updateAnswerStatus(attemptId, 1, 'skipped', skipTimestamp);
 
-  // Test bulk retrieval
-  const retrievalStart = performance.now();
-  const allStudents = await dbUtils.getAllStudents();
-  const retrievalEnd = performance.now();
+      // Update status to submitted
+      const submitTimestamp = Date.now();
+      await dbUtils.updateAnswerStatus(attemptId, 1, 'submitted', submitTimestamp);
 
-  console.log(`✅ Retrieved ${allStudents.length} students in ${(retrievalEnd - retrievalStart).toFixed(2)}ms`);
-}
+      // Verify final status and timestamps
+      const answers = await dbUtils.getAnswersByAttempt(attemptId);
+      const answer = answers.find(a => a.questionId === 1);
+      
+      expect(answer?.status).toBe('submitted');
+      expect(answer?.submittedAt).toBe(submitTimestamp);
+    });
+  });
 
-/**
- * Manual Test Runner
- * Call this function in the browser console to run all tests
- */
-export function runTests(): void {
-  runAllTests().catch(console.error);
-}
+  describe('Status-based Queries', () => {
+    test('should query answers by status', async () => {
+      const attemptId = await dbUtils.createAttempt({
+        studentId: 'test-student',
+        quizId: 'test-quiz',
+        timestamp: Date.now(),
+        completed: false
+      });
 
-/**
- * Quick Health Check
- * Call this function to verify basic database functionality
- */
-export async function healthCheck(): Promise<boolean> {
-  try {
-    await dbUtils.validateSchema();
-    const stats = await dbUtils.getDatabaseStats();
-    console.log('✅ Database health check passed:', stats);
-    return true;
-  } catch (error) {
-    console.error('❌ Database health check failed:', error);
-    return false;
-  }
-} 
+      // Save answers with different statuses
+      await dbUtils.saveAnswer({
+        attemptId,
+        questionId: 1,
+        answer: 'skipped answer',
+        status: 'skipped'
+      });
+
+      await dbUtils.saveAnswer({
+        attemptId,
+        questionId: 2,
+        answer: 'submitted answer',
+        status: 'submitted'
+      });
+
+      await dbUtils.saveAnswer({
+        attemptId,
+        questionId: 3,
+        answer: 'answered answer',
+        status: 'answered'
+      });
+
+      // Query by status
+      const skippedAnswers = await dbUtils.getAnswersByStatus(attemptId, 'skipped');
+      const submittedAnswers = await dbUtils.getAnswersByStatus(attemptId, 'submitted');
+      const answeredAnswers = await dbUtils.getAnswersByStatus(attemptId, 'answered');
+
+      expect(skippedAnswers).toHaveLength(1);
+      expect(submittedAnswers).toHaveLength(1);
+      expect(answeredAnswers).toHaveLength(1);
+
+      expect(skippedAnswers[0].questionId).toBe(1);
+      expect(submittedAnswers[0].questionId).toBe(2);
+      expect(answeredAnswers[0].questionId).toBe(3);
+    });
+
+    test('should return empty array for non-existent status', async () => {
+      const attemptId = await dbUtils.createAttempt({
+        studentId: 'test-student',
+        quizId: 'test-quiz',
+        timestamp: Date.now(),
+        completed: false
+      });
+
+      const pendingAnswers = await dbUtils.getAnswersByStatus(attemptId, 'pending');
+      expect(pendingAnswers).toHaveLength(0);
+    });
+  });
+
+  describe('Backward Compatibility', () => {
+    test('should handle existing data without status field', async () => {
+      // This test simulates loading data from an older schema version
+      const attemptId = await dbUtils.createAttempt({
+        studentId: 'test-student',
+        quizId: 'test-quiz',
+        timestamp: Date.now(),
+        completed: false
+      });
+
+      // Simulate old data without status field
+      await db.answers.add({
+        attemptId,
+        questionId: 1,
+        answer: 'old answer'
+        // No status field - should be handled by migration
+      });
+
+      // Verify the data can be retrieved and has default status
+      const answers = await dbUtils.getAnswersByAttempt(attemptId);
+      expect(answers).toHaveLength(1);
+      expect(answers[0].status).toBe('answered'); // Default from migration
+    });
+
+    test('should maintain data integrity during migration', async () => {
+      const attemptId = await dbUtils.createAttempt({
+        studentId: 'test-student',
+        quizId: 'test-quiz',
+        timestamp: Date.now(),
+        completed: false
+      });
+
+      // Create multiple answers with different statuses
+      const answers = [
+        { questionId: 1, answer: 'answer 1', status: 'pending' as const },
+        { questionId: 2, answer: 'answer 2', status: 'submitted' as const },
+        { questionId: 3, answer: 'answer 3', status: 'skipped' as const },
+        { questionId: 4, answer: 'answer 4', status: 'answered' as const }
+      ];
+
+      for (const answer of answers) {
+        await dbUtils.saveAnswer({
+          attemptId,
+          ...answer
+        });
+      }
+
+      // Verify all answers are preserved with correct statuses
+      const retrievedAnswers = await dbUtils.getAnswersByAttempt(attemptId);
+      expect(retrievedAnswers).toHaveLength(4);
+
+      for (const answer of answers) {
+        const retrieved = retrievedAnswers.find(a => a.questionId === answer.questionId);
+        expect(retrieved?.status).toBe(answer.status);
+        expect(retrieved?.answer).toBe(answer.answer);
+      }
+    });
+  });
+
+  describe('Error Handling', () => {
+    test('should handle invalid status values', async () => {
+      const attemptId = await dbUtils.createAttempt({
+        studentId: 'test-student',
+        quizId: 'test-quiz',
+        timestamp: Date.now(),
+        completed: false
+      });
+
+      // Try to save answer with invalid status
+      await expect(dbUtils.saveAnswer({
+        attemptId,
+        questionId: 1,
+        answer: 'test answer',
+        status: 'invalid' as any
+      })).rejects.toThrow('Answer status must be one of: pending, skipped, submitted, answered');
+    });
+
+    test('should handle database errors gracefully', async () => {
+      // Test with invalid attempt ID
+      await expect(dbUtils.updateAnswerStatus(999, 1, 'submitted'))
+        .rejects.toThrow();
+    });
+  });
+
+  describe('Performance and Caching', () => {
+    test('should cache status-based queries', async () => {
+      const attemptId = await dbUtils.createAttempt({
+        studentId: 'test-student',
+        quizId: 'test-quiz',
+        timestamp: Date.now(),
+        completed: false
+      });
+
+      await dbUtils.saveAnswer({
+        attemptId,
+        questionId: 1,
+        answer: 'test answer',
+        status: 'submitted'
+      });
+
+      // First query should cache
+      const firstQuery = await dbUtils.getAnswersByStatus(attemptId, 'submitted');
+      expect(firstQuery).toHaveLength(1);
+
+      // Second query should use cache
+      const secondQuery = await dbUtils.getAnswersByStatus(attemptId, 'submitted');
+      expect(secondQuery).toHaveLength(1);
+
+      // Verify cache stats
+      const cacheStats = dbUtils.getCacheStats();
+      expect(cacheStats.size).toBeGreaterThan(0);
+    });
+  });
+}); 

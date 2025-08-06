@@ -1,304 +1,407 @@
-// Define interfaces locally to avoid import issues
-interface CurrencyItem {
-  id: string;
-  value: number;
-  name: string;
-  type: 'coin' | 'note';
-  image: string;
-  imagePath: string;
+import type { Answer, Question, QuestionType } from '../types/questions';
+
+// Enhanced validation utilities with latest TypeScript patterns and better error handling
+export interface ValidationResult {
+  isValid: boolean;
+  error?: string;
+  score?: number;
 }
 
-interface QuestionValidationResult {
+export interface AnswerValidation {
   isCorrect: boolean;
-  feedback: string;
   score: number;
+  feedback?: string;
 }
 
-// Validation functions for different question types
-
-export const validateDragDropAnswer = (
-  answer: CurrencyItem[],
-  targetAmount: number,
-  maxItems?: number
-): QuestionValidationResult => {
-  // Check if answer is provided
-  if (!answer || !Array.isArray(answer)) {
-    return {
-      isCorrect: false,
-      feedback: 'Please select some currency items.',
-      score: 0
-    };
-  }
-
-  // Check if too many items selected
-  if (maxItems && answer.length > maxItems) {
-    return {
-      isCorrect: false,
-      feedback: `You can only select up to ${maxItems} items.`,
-      score: 0
-    };
-  }
-
-  // Calculate total value
-  const totalValue = answer.reduce((sum, item) => sum + item.value, 0);
-
-  // Check if total matches target
-  if (Math.abs(totalValue - targetAmount) < 0.01) {
-    return {
-      isCorrect: true,
-      feedback: 'Perfect! You have the exact amount.',
-      score: 1
-    };
-  } else if (totalValue > targetAmount) {
-    const excess = totalValue - targetAmount;
-    return {
-      isCorrect: false,
-      feedback: `You have $${excess.toFixed(2)} too much. Try removing some items.`,
-      score: 0
-    };
-  } else {
-    const shortfall = targetAmount - totalValue;
-    return {
-      isCorrect: false,
-      feedback: `You need $${shortfall.toFixed(2)} more. Try adding more items.`,
-      score: 0
-    };
-  }
-};
-
-export const validateSortingAnswer = (
-  answer: CurrencyItem[],
-  expectedDirection: 'ascending' | 'descending'
-): QuestionValidationResult => {
-  // Check if answer is provided
-  if (!answer || !Array.isArray(answer) || answer.length === 0) {
-    return {
-      isCorrect: false,
-      feedback: 'Please arrange the items in order.',
-      score: 0
-    };
-  }
-
-  // Check if all items are in correct order
-  for (let i = 1; i < answer.length; i++) {
-    const prevValue = answer[i - 1].value;
-    const currentValue = answer[i].value;
-    
-    if (expectedDirection === 'ascending' && prevValue > currentValue) {
-      return {
-        isCorrect: false,
-        feedback: 'Items are not in ascending order. Sort from lowest to highest value.',
-        score: 0
-      };
-    }
-    
-    if (expectedDirection === 'descending' && prevValue < currentValue) {
-      return {
-        isCorrect: false,
-        feedback: 'Items are not in descending order. Sort from highest to lowest value.',
-        score: 0
-      };
-    }
-  }
-
-  return {
-    isCorrect: true,
-    feedback: 'Perfect! The items are sorted correctly.',
-    score: 1
-  };
-};
-
-export const validateMultipleChoiceAnswer = (
-  answer: string,
-  correctAnswer: string
-): QuestionValidationResult => {
-  if (!answer) {
-    return {
-      isCorrect: false,
-      feedback: 'Please select an answer.',
-      score: 0
-    };
-  }
-
-  const isCorrect = answer === correctAnswer;
-  
-  return {
-    isCorrect,
-    feedback: isCorrect 
-      ? 'Correct! Well done.' 
-      : 'Incorrect. Please try again.',
-    score: isCorrect ? 1 : 0
-  };
-};
-
-export const validateTextInputAnswer = (
-  answer: string,
-  correctAnswer: string | number,
-  tolerance: number = 0.01
-): QuestionValidationResult => {
-  if (!answer || answer.trim() === '') {
-    return {
-      isCorrect: false,
-      feedback: 'Please enter an answer.',
-      score: 0
-    };
-  }
-
-  // Clean the answer (remove currency symbols, spaces, etc.)
-  const cleanAnswer = answer.replace(/[$,]/g, '').trim();
-  
-  // Try to parse as number
-  const numericAnswer = parseFloat(cleanAnswer);
-  
-  if (isNaN(numericAnswer)) {
-    return {
-      isCorrect: false,
-      feedback: 'Please enter a valid number.',
-      score: 0
-    };
-  }
-
-  // Check if answer is within tolerance
-  const correctNumeric = typeof correctAnswer === 'string' ? parseFloat(correctAnswer) : correctAnswer;
-  
-  if (Math.abs(numericAnswer - correctNumeric) <= tolerance) {
-    return {
-      isCorrect: true,
-      feedback: 'Correct! Well done.',
-      score: 1
-    };
-  } else {
-    return {
-      isCorrect: false,
-      feedback: `Incorrect. The correct answer is $${correctNumeric.toFixed(2)}.`,
-      score: 0
-    };
-  }
-};
-
-export const validateTrueFalseAnswer = (
-  answer: boolean,
-  correctAnswer: boolean
-): QuestionValidationResult => {
-  if (answer === undefined || answer === null) {
-    return {
-      isCorrect: false,
-      feedback: 'Please select True or False.',
-      score: 0
-    };
-  }
-
-  const isCorrect = answer === correctAnswer;
-  
-  return {
-    isCorrect,
-    feedback: isCorrect 
-      ? 'Correct! Well done.' 
-      : 'Incorrect. Please try again.',
-    score: isCorrect ? 1 : 0
-  };
-};
-
-// Question-specific validation functions
-
-export const validateQuestion1 = (answer: CurrencyItem[]): QuestionValidationResult => {
-  return validateDragDropAnswer(answer, 0.50, 5);
-};
-
-export const validateQuestion2 = (answer: CurrencyItem[]): QuestionValidationResult => {
-  return validateDragDropAnswer(answer, 1.00, 5);
-};
-
-export const validateQuestion3 = (answer: CurrencyItem[]): QuestionValidationResult => {
-  return validateDragDropAnswer(answer, 5.00, 2);
-};
-
-export const validateQuestion4 = (answer: CurrencyItem[]): QuestionValidationResult => {
-  return validateDragDropAnswer(answer, 2.50, 5);
-};
-
-export const validateQuestion5 = (answer: CurrencyItem[]): QuestionValidationResult => {
-  return validateSortingAnswer(answer, 'ascending');
-};
-
-export const validateQuestion6 = (answer: CurrencyItem[]): QuestionValidationResult => {
-  return validateSortingAnswer(answer, 'descending');
-};
-
-export const validateQuestion7 = (answer: boolean): QuestionValidationResult => {
-  return validateTrueFalseAnswer(answer, true); // $2.50 > $0.85 is true
-};
-
-export const validateQuestion8 = (answer: string): QuestionValidationResult => {
-  return validateMultipleChoiceAnswer(answer, 'D'); // All of the above
-};
-
-export const validateQuestion9 = (answer: string): QuestionValidationResult => {
-  return validateTextInputAnswer(answer, 14.00); // $10 + 2 × $2 = $14
-};
-
-export const validateQuestion10 = (answer: string): QuestionValidationResult => {
-  return validateTextInputAnswer(answer, 2.25); // $5 - $2.75 = $2.25
-};
-
-// Main validation function that routes to appropriate validator
+// Enhanced answer validation with better error handling
 export const validateAnswer = (
-  questionId: number,
-  answer: any
-): QuestionValidationResult => {
-  const validators: Record<number, (answer: any) => QuestionValidationResult> = {
-    1: validateQuestion1,
-    2: validateQuestion2,
-    3: validateQuestion3,
-    4: validateQuestion4,
-    5: validateQuestion5,
-    6: validateQuestion6,
-    7: validateQuestion7,
-    8: validateQuestion8,
-    9: validateQuestion9,
-    10: validateQuestion10
-  };
-
-  const validator = validators[questionId];
-  
-  if (!validator) {
-    return {
-      isCorrect: false,
-      feedback: `No validator found for question ${questionId}.`,
-      score: 0
-    };
-  }
-
+  answer: Answer, 
+  question: Question
+): AnswerValidation => {
   try {
-    return validator(answer);
+    if (!answer || !question) {
+      return {
+        isCorrect: false,
+        score: 0,
+        feedback: 'Invalid answer or question data'
+      };
+    }
+
+    switch (question.type) {
+      case 'multiple-choice':
+        return validateMultipleChoice(answer, question);
+      case 'true-false':
+        return validateTrueFalse(answer, question);
+      case 'text-input':
+        return validateTextInput(answer, question);
+      case 'drag-drop':
+        return validateDragDrop(answer, question);
+      case 'sorting':
+        return validateSorting(answer, question);
+      default:
+        return {
+          isCorrect: false,
+          score: 0,
+          feedback: `Unsupported question type: ${(question as any).type}`
+        };
+    }
   } catch (error) {
-    console.error(`Validation error for question ${questionId}:`, error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown validation error';
     return {
       isCorrect: false,
-      feedback: 'An error occurred while validating your answer. Please try again.',
-      score: 0
+      score: 0,
+      feedback: `Validation error: ${errorMessage}`
     };
   }
 };
 
-// Utility function to calculate total score
-export const calculateTotalScore = (answers: Record<number, string>): number => {
-  let totalScore = 0;
-  let totalQuestions = 0;
+// Enhanced multiple choice validation
+const validateMultipleChoice = (answer: Answer, question: Question): AnswerValidation => {
+  if (!question.options || !Array.isArray(question.options)) {
+    return {
+      isCorrect: false,
+      score: 0,
+      feedback: 'Invalid question options'
+    };
+  }
 
-  Object.entries(answers).forEach(([questionIdStr, answerStr]) => {
-    const questionId = parseInt(questionIdStr);
-    if (questionId >= 1 && questionId <= 10) {
-      try {
-        const answer = JSON.parse(answerStr);
-        const result = validateAnswer(questionId, answer);
-        totalScore += result.score;
-        totalQuestions++;
-      } catch (error) {
-        console.error(`Error calculating score for question ${questionId}:`, error);
+  const selectedOption = answer.value;
+  const correctOption = question.options.find(option => option.isCorrect);
+
+  if (!correctOption) {
+    return {
+      isCorrect: false,
+      score: 0,
+      feedback: 'No correct option found in question'
+    };
+  }
+
+  const isCorrect = selectedOption === correctOption.value;
+  
+  return {
+    isCorrect,
+    score: isCorrect ? question.points || 1 : 0,
+    feedback: isCorrect ? 'Correct!' : `Incorrect. The correct answer was: ${correctOption.value}`
+  };
+};
+
+// Enhanced true/false validation
+const validateTrueFalse = (answer: Answer, question: Question): AnswerValidation => {
+  const userAnswer = answer.value?.toLowerCase().trim();
+  const correctAnswer = question.correctAnswer?.toLowerCase().trim();
+
+  if (!correctAnswer) {
+    return {
+      isCorrect: false,
+      score: 0,
+      feedback: 'No correct answer specified for question'
+    };
+  }
+
+  const isCorrect = userAnswer === correctAnswer;
+  
+  return {
+    isCorrect,
+    score: isCorrect ? question.points || 1 : 0,
+    feedback: isCorrect ? 'Correct!' : `Incorrect. The correct answer was: ${correctAnswer}`
+  };
+};
+
+// Enhanced text input validation with fuzzy matching
+const validateTextInput = (answer: Answer, question: Question): AnswerValidation => {
+  const userAnswer = answer.value?.toLowerCase().trim();
+  const correctAnswers = Array.isArray(question.correctAnswer) 
+    ? question.correctAnswer.map(ans => ans.toLowerCase().trim())
+    : [question.correctAnswer?.toLowerCase().trim()];
+
+  if (!correctAnswers.length || correctAnswers.every(ans => !ans)) {
+    return {
+      isCorrect: false,
+      score: 0,
+      feedback: 'No correct answer specified for question'
+    };
+  }
+
+  // Check for exact match first
+  const exactMatch = correctAnswers.some(correct => correct === userAnswer);
+  if (exactMatch) {
+    return {
+      isCorrect: true,
+      score: question.points || 1,
+      feedback: 'Correct!'
+    };
+  }
+
+  // Check for partial match (for more flexible validation)
+  const partialMatch = correctAnswers.some(correct => 
+    userAnswer?.includes(correct) || correct?.includes(userAnswer || '')
+  );
+
+  if (partialMatch) {
+    return {
+      isCorrect: true,
+      score: (question.points || 1) * 0.8, // Partial credit
+      feedback: 'Partially correct!'
+    };
+  }
+
+  return {
+    isCorrect: false,
+    score: 0,
+    feedback: `Incorrect. Correct answers include: ${correctAnswers.join(', ')}`
+  };
+};
+
+// Enhanced drag and drop validation
+const validateDragDrop = (answer: Answer, question: Question): AnswerValidation => {
+  if (!question.correctOrder || !Array.isArray(question.correctOrder)) {
+    return {
+      isCorrect: false,
+      score: 0,
+      feedback: 'No correct order specified for drag-drop question'
+    };
+  }
+
+  const userOrder = Array.isArray(answer.value) ? answer.value : [];
+  
+  if (userOrder.length !== question.correctOrder.length) {
+    return {
+      isCorrect: false,
+      score: 0,
+      feedback: 'Incomplete answer'
+    };
+  }
+
+  // Check if all items are in correct positions
+  const isFullyCorrect = userOrder.every((item, index) => 
+    item === question.correctOrder[index]
+  );
+
+  if (isFullyCorrect) {
+    return {
+      isCorrect: true,
+      score: question.points || 1,
+      feedback: 'Correct! All items are in the right order.'
+    };
+  }
+
+  // Calculate partial score based on correct positions
+  const correctPositions = userOrder.reduce((count, item, index) => 
+    count + (item === question.correctOrder[index] ? 1 : 0), 0
+  );
+
+  const partialScore = (question.points || 1) * (correctPositions / question.correctOrder.length);
+
+  return {
+    isCorrect: false,
+    score: partialScore,
+    feedback: `Partially correct. ${correctPositions} out of ${question.correctOrder.length} items are in the right position.`
+  };
+};
+
+// Enhanced sorting validation
+const validateSorting = (answer: Answer, question: Question): AnswerValidation => {
+  if (!question.correctOrder || !Array.isArray(question.correctOrder)) {
+    return {
+      isCorrect: false,
+      score: 0,
+      feedback: 'No correct order specified for sorting question'
+    };
+  }
+
+  const userOrder = Array.isArray(answer.value) ? answer.value : [];
+  
+  if (userOrder.length !== question.correctOrder.length) {
+    return {
+      isCorrect: false,
+      score: 0,
+      feedback: 'Incomplete answer'
+    };
+  }
+
+  // Check if all items are in correct positions
+  const isFullyCorrect = userOrder.every((item, index) => 
+    item === question.correctOrder[index]
+  );
+
+  if (isFullyCorrect) {
+    return {
+      isCorrect: true,
+      score: question.points || 1,
+      feedback: 'Correct! All items are in the right order.'
+    };
+  }
+
+  // Calculate partial score based on correct positions
+  const correctPositions = userOrder.reduce((count, item, index) => 
+    count + (item === question.correctOrder[index] ? 1 : 0), 0
+  );
+
+  const partialScore = (question.points || 1) * (correctPositions / question.correctOrder.length);
+
+  return {
+    isCorrect: false,
+    score: partialScore,
+    feedback: `Partially correct. ${correctPositions} out of ${question.correctOrder.length} items are in the right position.`
+  };
+};
+
+// Enhanced total score calculation
+export const calculateTotalScore = (answers: Record<number, Answer>, questions: Question[]): number => {
+  try {
+    let totalScore = 0;
+    let maxPossibleScore = 0;
+
+    questions.forEach((question, index) => {
+      const answer = answers[index];
+      if (answer) {
+        const validation = validateAnswer(answer, question);
+        totalScore += validation.score;
+      }
+      maxPossibleScore += question.points || 1;
+    });
+
+    return {
+      totalScore,
+      maxPossibleScore,
+      percentage: maxPossibleScore > 0 ? (totalScore / maxPossibleScore) * 100 : 0
+    };
+  } catch (error) {
+    console.error('Error calculating total score:', error);
+    return {
+      totalScore: 0,
+      maxPossibleScore: 0,
+      percentage: 0
+    };
+  }
+};
+
+// Enhanced validation for question data
+export const validateQuestion = (question: Question): ValidationResult => {
+  try {
+    if (!question) {
+      return {
+        isValid: false,
+        error: 'Question is required'
+      };
+    }
+
+    if (!question.text || question.text.trim() === '') {
+      return {
+        isValid: false,
+        error: 'Question text is required'
+      };
+    }
+
+    if (!question.type) {
+      return {
+        isValid: false,
+        error: 'Question type is required'
+      };
+    }
+
+    // Validate based on question type
+    switch (question.type) {
+      case 'multiple-choice':
+        if (!question.options || question.options.length < 2) {
+          return {
+            isValid: false,
+            error: 'Multiple choice questions must have at least 2 options'
+          };
+        }
+        if (!question.options.some(option => option.isCorrect)) {
+          return {
+            isValid: false,
+            error: 'Multiple choice questions must have at least one correct option'
+          };
+        }
+        break;
+
+      case 'true-false':
+        if (!question.correctAnswer) {
+          return {
+            isValid: false,
+            error: 'True/false questions must have a correct answer'
+          };
+        }
+        break;
+
+      case 'text-input':
+        if (!question.correctAnswer) {
+          return {
+            isValid: false,
+            error: 'Text input questions must have a correct answer'
+          };
+        }
+        break;
+
+      case 'drag-drop':
+      case 'sorting':
+        if (!question.correctOrder || question.correctOrder.length < 2) {
+          return {
+            isValid: false,
+            error: 'Drag-drop and sorting questions must have at least 2 items in correct order'
+          };
+        }
+        break;
+
+      default:
+        return {
+          isValid: false,
+          error: `Unsupported question type: ${(question as any).type}`
+        };
+    }
+
+    return {
+      isValid: true
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown validation error';
+    return {
+      isValid: false,
+      error: `Question validation error: ${errorMessage}`
+    };
+  }
+};
+
+// Enhanced validation for quiz data
+export const validateQuiz = (questions: Question[]): ValidationResult => {
+  try {
+    if (!Array.isArray(questions)) {
+      return {
+        isValid: false,
+        error: 'Questions must be an array'
+      };
+    }
+
+    if (questions.length === 0) {
+      return {
+        isValid: false,
+        error: 'Quiz must have at least one question'
+      };
+    }
+
+    // Validate each question
+    for (let i = 0; i < questions.length; i++) {
+      const question = questions[i];
+      const validation = validateQuestion(question);
+      
+      if (!validation.isValid) {
+        return {
+          isValid: false,
+          error: `Question ${i + 1}: ${validation.error}`
+        };
       }
     }
-  });
 
-  return totalQuestions > 0 ? (totalScore / totalQuestions) * 100 : 0;
+    return {
+      isValid: true
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown validation error';
+    return {
+      isValid: false,
+      error: `Quiz validation error: ${errorMessage}`
+    };
+  }
 }; 

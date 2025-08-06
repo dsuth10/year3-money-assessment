@@ -1,12 +1,12 @@
 import React from 'react';
-import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { DndContext } from '@dnd-kit/core';
 import DraggableCurrencyItem from './DraggableCurrencyItem';
 import { getAllCurrency } from '../../data/currency';
 
 const DraggableCurrencyTest: React.FC = () => {
   const allCurrency = getAllCurrency();
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = (event: any) => {
     const { active, over } = event;
     
     if (active && over) {

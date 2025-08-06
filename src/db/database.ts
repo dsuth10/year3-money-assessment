@@ -1,554 +1,382 @@
-import Dexie, { type Table } from "dexie";
+import { openDB, type IDBPDatabase } from 'idb';
 
-/**
- * Database Schema Documentation
- * 
- * This module implements a Dexie 4 IndexedDB database for the Year 3 Money Assessment application.
- * 
- * Schema Version History:
- * - v1: Initial schema with basic tables for students, attempts, answers, and quiz data
- * - Future migrations will be handled through Dexie's versioning system
- * 
- * Tables:
- * - students: Student information and progress tracking
- * - studentAttempts: Quiz attempt records with timestamps and completion status
- * - answers: Individual question answers linked to attempts
- * - quizData: Quiz definitions and question structures
- * 
- * Indexes:
- * - Composite indexes for common query patterns (studentId+quizId, attemptId+questionId)
- * - Timestamp indexes for chronological queries
- * - Foreign key relationships maintained through indexed fields
- */
-
-// Database interfaces with runtime validation
-export interface StudentAttempt {
-  id?: number;
-  studentId: string;
-  quizId: string;
-  timestamp: number;
-  completed: boolean;
-  score?: number;
-}
-
-export interface Answer {
-  id?: number;
-  attemptId: number;
-  questionId: number;
-  answer: string;
-  isCorrect?: boolean;
-}
-
+// Enhanced database types with better TypeScript support
 export interface Student {
   id: string;
   name: string;
-  grade: string;
-  lastAttempt?: Date;
   totalAttempts: number;
+  lastAttempt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface QuizData {
+export interface StudentAttempt {
   id: string;
-  title: string;
-  questions: Question[];
-  totalQuestions: number;
+  studentId: string;
+  quizId: string;
+  answers: Record<number, Answer>;
+  score: number;
+  maxScore: number;
+  percentage: number;
+  completedAt: Date;
+  createdAt: Date;
 }
 
-export interface Question {
-  id: number;
-  text: string;
-  type: 'multiple-choice' | 'drag-drop' | 'text';
-  options?: string[];
-  correctAnswer: string;
-  currencyAmount?: number;
+export interface Answer {
+  value: string | number | boolean | any[];
+  isCorrect: boolean;
+  score: number;
+  feedback?: string;
+  submittedAt: Date;
 }
 
-// Runtime validation functions
-const validateStudentAttempt = (attempt: StudentAttempt): void => {
-  if (!attempt.studentId || !attempt.quizId) {
-    throw new Error('StudentAttempt requires studentId and quizId');
-  }
-  if (typeof attempt.timestamp !== 'number' || attempt.timestamp <= 0) {
-    throw new Error('StudentAttempt requires valid timestamp');
-  }
-  if (typeof attempt.completed !== 'boolean') {
-    throw new Error('StudentAttempt requires boolean completed field');
-  }
-};
+// Enhanced database configuration
+const DB_NAME = 'Year3MathsDB';
+const DB_VERSION = 1;
 
-const validateAnswer = (answer: Answer): void => {
-  if (!answer.attemptId || !answer.questionId) {
-    throw new Error('Answer requires attemptId and questionId');
-  }
-  if (!answer.answer) {
-    throw new Error('Answer requires answer field');
-  }
-};
+// Store names
+const STORES = {
+  STUDENTS: 'students',
+  ATTEMPTS: 'attempts',
+  SETTINGS: 'settings'
+} as const;
 
-const validateStudent = (student: Student): void => {
-  if (!student.id || !student.name || !student.grade) {
-    throw new Error('Student requires id, name, and grade');
-  }
-  if (typeof student.totalAttempts !== 'number' || student.totalAttempts < 0) {
-    throw new Error('Student requires valid totalAttempts');
-  }
-};
+// Enhanced database schema
+interface DBSchema {
+  students: {
+    key: string;
+    value: Student;
+    indexes: {
+      'by-name': string;
+      'by-created': Date;
+    };
+  };
+  attempts: {
+    key: string;
+    value: StudentAttempt;
+    indexes: {
+      'by-student': string;
+      'by-quiz': string;
+      'by-date': Date;
+    };
+  };
+  settings: {
+    key: string;
+    value: any;
+  };
+}
 
-const validateQuizData = (quizData: QuizData): void => {
-  if (!quizData.id || !quizData.title) {
-    throw new Error('QuizData requires id and title');
-  }
-  if (!Array.isArray(quizData.questions) || quizData.questions.length === 0) {
-    throw new Error('QuizData requires non-empty questions array');
-  }
-  if (typeof quizData.totalQuestions !== 'number' || quizData.totalQuestions <= 0) {
-    throw new Error('QuizData requires valid totalQuestions');
-  }
-};
+// Enhanced database utilities with latest TypeScript patterns
+class DatabaseManager {
+  private db: IDBPDatabase<DBSchema> | null = null;
+  private isInitialized = false;
 
-// Database class with enhanced schema and performance optimizations
-export class QuizDatabase extends Dexie {
-  studentAttempts!: Table<StudentAttempt, number>;
-  answers!: Table<Answer, number>;
-  students!: Table<Student, string>;
-  quizData!: Table<QuizData, string>;
+  // Enhanced initialization with better error handling
+  async initializeDatabase(): Promise<void> {
+    try {
+      if (this.isInitialized && this.db) {
+        return;
+      }
 
-  constructor() {
-    super("QuizDatabase");
-    
-    // Schema version 1: Initial schema with optimized indexes
-    this.version(1).stores({
-      // Primary key: auto-incrementing id
-      // Indexes: studentId, quizId, timestamp for efficient queries
-      // Composite index: [studentId+quizId] for student's quiz attempts
-      studentAttempts: "++id, studentId, quizId, timestamp, completed, [studentId+quizId]",
+      this.db = await openDB<DBSchema>(DB_NAME, DB_VERSION, {
+        upgrade: (db, oldVersion, newVersion) => {
+          console.log(`Upgrading database from version ${oldVersion} to ${newVersion}`);
+
+          // Create students store
+          if (!db.objectStoreNames.contains(STORES.STUDENTS)) {
+            const studentsStore = db.createObjectStore(STORES.STUDENTS, { keyPath: 'id' });
+            studentsStore.createIndex('by-name', 'name');
+            studentsStore.createIndex('by-created', 'createdAt');
+          }
+
+          // Create attempts store
+          if (!db.objectStoreNames.contains(STORES.ATTEMPTS)) {
+            const attemptsStore = db.createObjectStore(STORES.ATTEMPTS, { keyPath: 'id' });
+            attemptsStore.createIndex('by-student', 'studentId');
+            attemptsStore.createIndex('by-quiz', 'quizId');
+            attemptsStore.createIndex('by-date', 'completedAt');
+          }
+
+          // Create settings store
+          if (!db.objectStoreNames.contains(STORES.SETTINGS)) {
+            db.createObjectStore(STORES.SETTINGS, { keyPath: 'key' });
+          }
+        },
+        blocked: () => {
+          console.warn('Database upgrade was blocked');
+        },
+        blocking: () => {
+          console.warn('Database is blocking other connections');
+        },
+        terminated: () => {
+          console.error('Database connection was terminated');
+          this.isInitialized = false;
+          this.db = null;
+        }
+      });
+
+      this.isInitialized = true;
+      console.log('Database initialized successfully');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
+      console.error('Failed to initialize database:', errorMessage);
+      throw new Error(`Database initialization failed: ${errorMessage}`);
+    }
+  }
+
+  // Enhanced student operations
+  async addStudent(student: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    try {
+      await this.ensureInitialized();
       
-      // Primary key: auto-incrementing id  
-      // Indexes: attemptId, questionId for answer retrieval
-      // Composite index: [attemptId+questionId] for attempt's answers
-      answers: "++id, attemptId, questionId, [attemptId+questionId]",
-      
-      // Primary key: student id string
-      // Indexes: name, grade for student lookups
-      students: "id, name, grade",
-      
-      // Primary key: quiz id string
-      // Indexes: title, totalQuestions for quiz management
-      quizData: "id, title, totalQuestions",
-    });
+      const id = crypto.randomUUID();
+      const now = new Date();
+      const newStudent: Student = {
+        ...student,
+        id,
+        createdAt: now,
+        updatedAt: now
+      };
 
-    // Future migration example (uncomment when needed):
-    // this.version(2).stores({
-    //   studentAttempts: "++id, studentId, quizId, timestamp, completed, score, [studentId+quizId], [studentId+timestamp]",
-    //   // Add new fields or indexes as needed
-    // });
+      await this.db!.add(STORES.STUDENTS, newStudent);
+      console.log(`Student added successfully: ${id}`);
+      return id;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to add student:', errorMessage);
+      throw new Error(`Failed to add student: ${errorMessage}`);
+    }
+  }
+
+  async getStudent(id: string): Promise<Student | undefined> {
+    try {
+      await this.ensureInitialized();
+      return await this.db!.get(STORES.STUDENTS, id);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to get student:', errorMessage);
+      throw new Error(`Failed to get student: ${errorMessage}`);
+    }
+  }
+
+  async getStudentByName(name: string): Promise<Student | undefined> {
+    try {
+      await this.ensureInitialized();
+      const tx = this.db!.transaction(STORES.STUDENTS, 'readonly');
+      const store = tx.objectStore(STORES.STUDENTS);
+      const index = store.index('by-name');
+      return await index.get(name);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to get student by name:', errorMessage);
+      throw new Error(`Failed to get student by name: ${errorMessage}`);
+    }
+  }
+
+  async getAllStudents(): Promise<Student[]> {
+    try {
+      await this.ensureInitialized();
+      return await this.db!.getAll(STORES.STUDENTS);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to get all students:', errorMessage);
+      throw new Error(`Failed to get all students: ${errorMessage}`);
+    }
+  }
+
+  async updateStudent(id: string, updates: Partial<Student>): Promise<void> {
+    try {
+      await this.ensureInitialized();
+      
+      const student = await this.getStudent(id);
+      if (!student) {
+        throw new Error(`Student with id ${id} not found`);
+      }
+
+      const updatedStudent: Student = {
+        ...student,
+        ...updates,
+        updatedAt: new Date()
+      };
+
+      await this.db!.put(STORES.STUDENTS, updatedStudent);
+      console.log(`Student updated successfully: ${id}`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to update student:', errorMessage);
+      throw new Error(`Failed to update student: ${errorMessage}`);
+    }
+  }
+
+  async deleteStudent(id: string): Promise<void> {
+    try {
+      await this.ensureInitialized();
+      await this.db!.delete(STORES.STUDENTS, id);
+      console.log(`Student deleted successfully: ${id}`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to delete student:', errorMessage);
+      throw new Error(`Failed to delete student: ${errorMessage}`);
+    }
+  }
+
+  // Enhanced attempt operations
+  async saveAttempt(attempt: Omit<StudentAttempt, 'id' | 'createdAt'>): Promise<string> {
+    try {
+      await this.ensureInitialized();
+      
+      const id = crypto.randomUUID();
+      const now = new Date();
+      const newAttempt: StudentAttempt = {
+        ...attempt,
+        id,
+        createdAt: now
+      };
+
+      await this.db!.add(STORES.ATTEMPTS, newAttempt);
+      console.log(`Attempt saved successfully: ${id}`);
+      return id;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to save attempt:', errorMessage);
+      throw new Error(`Failed to save attempt: ${errorMessage}`);
+    }
+  }
+
+  async getAttempt(id: string): Promise<StudentAttempt | undefined> {
+    try {
+      await this.ensureInitialized();
+      return await this.db!.get(STORES.ATTEMPTS, id);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to get attempt:', errorMessage);
+      throw new Error(`Failed to get attempt: ${errorMessage}`);
+    }
+  }
+
+  async getAttemptsByStudent(studentId: string): Promise<StudentAttempt[]> {
+    try {
+      await this.ensureInitialized();
+      const tx = this.db!.transaction(STORES.ATTEMPTS, 'readonly');
+      const store = tx.objectStore(STORES.ATTEMPTS);
+      const index = store.index('by-student');
+      return await index.getAll(studentId);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to get attempts by student:', errorMessage);
+      throw new Error(`Failed to get attempts by student: ${errorMessage}`);
+    }
+  }
+
+  async getAttemptsByQuiz(quizId: string): Promise<StudentAttempt[]> {
+    try {
+      await this.ensureInitialized();
+      const tx = this.db!.transaction(STORES.ATTEMPTS, 'readonly');
+      const store = tx.objectStore(STORES.ATTEMPTS);
+      const index = store.index('by-quiz');
+      return await index.getAll(quizId);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to get attempts by quiz:', errorMessage);
+      throw new Error(`Failed to get attempts by quiz: ${errorMessage}`);
+    }
+  }
+
+  async getAllAttempts(): Promise<StudentAttempt[]> {
+    try {
+      await this.ensureInitialized();
+      return await this.db!.getAll(STORES.ATTEMPTS);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to get all attempts:', errorMessage);
+      throw new Error(`Failed to get all attempts: ${errorMessage}`);
+    }
+  }
+
+  // Enhanced settings operations
+  async getSetting(key: string): Promise<any> {
+    try {
+      await this.ensureInitialized();
+      const setting = await this.db!.get(STORES.SETTINGS, key);
+      return setting?.value;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to get setting:', errorMessage);
+      throw new Error(`Failed to get setting: ${errorMessage}`);
+    }
+  }
+
+  async setSetting(key: string, value: any): Promise<void> {
+    try {
+      await this.ensureInitialized();
+      await this.db!.put(STORES.SETTINGS, { key, value });
+      console.log(`Setting saved successfully: ${key}`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to set setting:', errorMessage);
+      throw new Error(`Failed to set setting: ${errorMessage}`);
+    }
+  }
+
+  // Enhanced utility methods
+  async clearDatabase(): Promise<void> {
+    try {
+      await this.ensureInitialized();
+      
+      const tx = this.db!.transaction([STORES.STUDENTS, STORES.ATTEMPTS, STORES.SETTINGS], 'readwrite');
+      
+      await tx.objectStore(STORES.STUDENTS).clear();
+      await tx.objectStore(STORES.ATTEMPTS).clear();
+      await tx.objectStore(STORES.SETTINGS).clear();
+      
+      console.log('Database cleared successfully');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to clear database:', errorMessage);
+      throw new Error(`Failed to clear database: ${errorMessage}`);
+    }
+  }
+
+  async getDatabaseInfo(): Promise<{
+    studentCount: number;
+    attemptCount: number;
+    settingCount: number;
+  }> {
+    try {
+      await this.ensureInitialized();
+      
+      const students = await this.db!.getAll(STORES.STUDENTS);
+      const attempts = await this.db!.getAll(STORES.ATTEMPTS);
+      const settings = await this.db!.getAll(STORES.SETTINGS);
+      
+      return {
+        studentCount: students.length,
+        attemptCount: attempts.length,
+        settingCount: settings.length
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to get database info:', errorMessage);
+      throw new Error(`Failed to get database info: ${errorMessage}`);
+    }
+  }
+
+  // Private helper methods
+  private async ensureInitialized(): Promise<void> {
+    if (!this.isInitialized || !this.db) {
+      await this.initializeDatabase();
+    }
+  }
+
+  async closeDatabase(): Promise<void> {
+    if (this.db) {
+      this.db.close();
+      this.db = null;
+      this.isInitialized = false;
+      console.log('Database connection closed');
+    }
   }
 }
 
 // Export singleton instance
-export const db = new QuizDatabase();
-
-// Performance monitoring utilities
-interface DatabaseStats {
-  students: number;
-  attempts: number;
-  answers: number;
-  quizzes: number;
-  averageQueryTime?: number;
-  cacheHitRate?: number;
-}
-
-// In-memory cache for frequently accessed data
-const cache = new Map<string, any>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-const getCached = <T>(key: string): T | null => {
-  const cached = cache.get(key);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data;
-  }
-  cache.delete(key);
-  return null;
-};
-
-const setCached = <T>(key: string, data: T): void => {
-  cache.set(key, { data, timestamp: Date.now() });
-};
-
-// Enhanced database utility functions with validation, caching, and error handling
-export const dbUtils = {
-  // Student management with validation and caching
-  async addStudent(student: Omit<Student, 'totalAttempts'>): Promise<string> {
-    try {
-      const studentWithDefaults = { ...student, totalAttempts: 0 };
-      validateStudent(studentWithDefaults);
-      await db.students.put(studentWithDefaults);
-      cache.delete('students'); // Invalidate cache
-      return student.id;
-    } catch (error) {
-      console.error('Error adding student:', error);
-      throw error;
-    }
-  },
-
-  async getStudent(id: string): Promise<Student | undefined> {
-    try {
-      const cacheKey = `student:${id}`;
-      const cached = getCached<Student>(cacheKey);
-      if (cached) return cached;
-
-      const student = await db.students.get(id);
-      if (student) {
-        setCached(cacheKey, student);
-      }
-      return student;
-    } catch (error) {
-      console.error('Error getting student:', error);
-      throw error;
-    }
-  },
-
-  async getAllStudents(): Promise<Student[]> {
-    try {
-      const cached = getCached<Student[]>('all-students');
-      if (cached) return cached;
-
-      const students = await db.students.toArray();
-      setCached('all-students', students);
-      return students;
-    } catch (error) {
-      console.error('Error getting all students:', error);
-      throw error;
-    }
-  },
-
-  async getStudentByName(name: string): Promise<Student | undefined> {
-    try {
-      const normalizedName = name.trim().toLowerCase();
-      const cacheKey = `student-by-name:${normalizedName}`;
-      const cached = getCached<Student>(cacheKey);
-      if (cached) return cached;
-
-      // Get all students and filter by normalized name
-      const students = await db.students.toArray();
-      const student = students.find(s => 
-        s.name.trim().toLowerCase() === normalizedName
-      );
-      
-      if (student) {
-        setCached(cacheKey, student);
-      }
-      return student;
-    } catch (error) {
-      console.error('Error getting student by name:', error);
-      throw error;
-    }
-  },
-
-  async updateStudent(id: string, updates: Partial<Student>): Promise<void> {
-    try {
-      const existing = await db.students.get(id);
-      if (!existing) {
-        throw new Error(`Student with id ${id} not found`);
-      }
-      
-      const updated = { ...existing, ...updates };
-      validateStudent(updated);
-      
-      await db.students.update(id, updates);
-      
-      // Invalidate related caches
-      cache.delete(`student:${id}`);
-      cache.delete('all-students');
-    } catch (error) {
-      console.error('Error updating student:', error);
-      throw error;
-    }
-  },
-
-  // Quiz attempts with atomic operations and validation
-  async createAttempt(attempt: Omit<StudentAttempt, 'id'>): Promise<number> {
-    try {
-      validateStudentAttempt(attempt);
-      const id = await db.studentAttempts.add(attempt);
-      
-      // Update student's attempt count atomically
-      await db.transaction('rw', [db.students, db.studentAttempts], async () => {
-        const student = await db.students.get(attempt.studentId);
-        if (student) {
-          await db.students.update(attempt.studentId, {
-            totalAttempts: student.totalAttempts + 1,
-            lastAttempt: new Date()
-          });
-        }
-      });
-      
-      cache.delete('students');
-      return id;
-    } catch (error) {
-      console.error('Error creating attempt:', error);
-      throw error;
-    }
-  },
-
-  async getAttemptsByStudent(studentId: string): Promise<StudentAttempt[]> {
-    try {
-      const cacheKey = `attempts:${studentId}`;
-      const cached = getCached<StudentAttempt[]>(cacheKey);
-      if (cached) return cached;
-
-      const attempts = await db.studentAttempts
-        .where('studentId')
-        .equals(studentId)
-        .reverse()
-        .sortBy('timestamp');
-      
-      setCached(cacheKey, attempts);
-      return attempts;
-    } catch (error) {
-      console.error('Error getting attempts by student:', error);
-      throw error;
-    }
-  },
-
-  async getAttemptById(attemptId: number): Promise<StudentAttempt | undefined> {
-    try {
-      const cacheKey = `attempt:${attemptId}`;
-      const cached = getCached<StudentAttempt>(cacheKey);
-      if (cached) return cached;
-
-      const attempt = await db.studentAttempts.get(attemptId);
-      if (attempt) {
-        setCached(cacheKey, attempt);
-      }
-      return attempt;
-    } catch (error) {
-      console.error('Error getting attempt by id:', error);
-      throw error;
-    }
-  },
-
-  async updateAttempt(attemptId: number, updates: Partial<StudentAttempt>): Promise<void> {
-    try {
-      const existing = await db.studentAttempts.get(attemptId);
-      if (!existing) {
-        throw new Error(`Attempt with id ${attemptId} not found`);
-      }
-      
-      const updated = { ...existing, ...updates };
-      validateStudentAttempt(updated);
-      
-      await db.studentAttempts.update(attemptId, updates);
-      
-      // Invalidate related caches
-      cache.delete(`attempt:${attemptId}`);
-      if (existing.studentId) {
-        cache.delete(`attempts:${existing.studentId}`);
-      }
-    } catch (error) {
-      console.error('Error updating attempt:', error);
-      throw error;
-    }
-  },
-
-  // Answers with optimized queries
-  async saveAnswer(answer: Omit<Answer, 'id'>): Promise<number> {
-    try {
-      validateAnswer(answer);
-      return await db.answers.add(answer);
-    } catch (error) {
-      console.error('Error saving answer:', error);
-      throw error;
-    }
-  },
-
-  async getAnswersByAttempt(attemptId: number): Promise<Answer[]> {
-    try {
-      const cacheKey = `answers:${attemptId}`;
-      const cached = getCached<Answer[]>(cacheKey);
-      if (cached) return cached;
-
-      const answers = await db.answers
-        .where('attemptId')
-        .equals(attemptId)
-        .sortBy('questionId');
-      
-      setCached(cacheKey, answers);
-      return answers;
-    } catch (error) {
-      console.error('Error getting answers by attempt:', error);
-      throw error;
-    }
-  },
-
-  // Quiz data management
-  async saveQuizData(quizData: QuizData): Promise<string> {
-    try {
-      validateQuizData(quizData);
-      await db.quizData.put(quizData);
-      cache.delete('quiz-data');
-      return quizData.id;
-    } catch (error) {
-      console.error('Error saving quiz data:', error);
-      throw error;
-    }
-  },
-
-  async getQuizData(quizId: string): Promise<QuizData | undefined> {
-    try {
-      const cacheKey = `quiz:${quizId}`;
-      const cached = getCached<QuizData>(cacheKey);
-      if (cached) return cached;
-
-      const quizData = await db.quizData.get(quizId);
-      if (quizData) {
-        setCached(cacheKey, quizData);
-      }
-      return quizData;
-    } catch (error) {
-      console.error('Error getting quiz data:', error);
-      throw error;
-    }
-  },
-
-  // Advanced query methods for optimized data retrieval
-  async getAttemptWithAnswers(attemptId: number): Promise<{
-    attempt: StudentAttempt;
-    answers: Answer[];
-  } | undefined> {
-    try {
-      const cacheKey = `attempt-with-answers:${attemptId}`;
-      const cached = getCached<{ attempt: StudentAttempt; answers: Answer[] }>(cacheKey);
-      if (cached) return cached;
-
-      const [attempt, answers] = await Promise.all([
-        db.studentAttempts.get(attemptId),
-        db.answers.where('attemptId').equals(attemptId).toArray()
-      ]);
-
-      if (attempt) {
-        const result = { attempt, answers };
-        setCached(cacheKey, result);
-        return result;
-      }
-      return undefined;
-    } catch (error) {
-      console.error('Error getting attempt with answers:', error);
-      throw error;
-    }
-  },
-
-  async getStudentProgress(studentId: string): Promise<{
-    student: Student;
-    attempts: StudentAttempt[];
-    totalScore: number;
-    averageScore: number;
-  } | undefined> {
-    try {
-      const cacheKey = `student-progress:${studentId}`;
-      const cached = getCached<{
-        student: Student;
-        attempts: StudentAttempt[];
-        totalScore: number;
-        averageScore: number;
-      }>(cacheKey);
-      if (cached) return cached;
-
-      const [student, attempts] = await Promise.all([
-        db.students.get(studentId),
-        db.studentAttempts.where('studentId').equals(studentId).toArray()
-      ]);
-
-      if (student) {
-        const completedAttempts = attempts.filter(a => a.completed && a.score !== undefined);
-        const totalScore = completedAttempts.reduce((sum, a) => sum + (a.score || 0), 0);
-        const averageScore = completedAttempts.length > 0 ? totalScore / completedAttempts.length : 0;
-
-        const result = { student, attempts, totalScore, averageScore };
-        setCached(cacheKey, result);
-        return result;
-      }
-      return undefined;
-    } catch (error) {
-      console.error('Error getting student progress:', error);
-      throw error;
-    }
-  },
-
-  // Utility functions with enhanced error handling
-  async clearAllData(): Promise<void> {
-    try {
-      await db.transaction('rw', [db.students, db.studentAttempts, db.answers, db.quizData], async () => {
-        await db.students.clear();
-        await db.studentAttempts.clear();
-        await db.answers.clear();
-        await db.quizData.clear();
-      });
-      
-      // Clear all caches
-      cache.clear();
-    } catch (error) {
-      console.error('Error clearing all data:', error);
-      throw error;
-    }
-  },
-
-  async getDatabaseStats(): Promise<DatabaseStats> {
-    try {
-      const startTime = performance.now();
-      
-      const [students, attempts, answers, quizzes] = await Promise.all([
-        db.students.count(),
-        db.studentAttempts.count(),
-        db.answers.count(),
-        db.quizData.count(),
-      ]);
-
-      const queryTime = performance.now() - startTime;
-
-      return { 
-        students, 
-        attempts, 
-        answers, 
-        quizzes,
-        averageQueryTime: queryTime,
-        cacheHitRate: cache.size > 0 ? 0.8 : 0 // Simplified cache hit rate
-      };
-    } catch (error) {
-      console.error('Error getting database stats:', error);
-      throw error;
-    }
-  },
-
-  // Cache management utilities
-  clearCache(): void {
-    cache.clear();
-  },
-
-  getCacheStats(): { size: number; keys: string[] } {
-    return {
-      size: cache.size,
-      keys: Array.from(cache.keys())
-    };
-  },
-
-  // Schema validation utility
-  async validateSchema(): Promise<{ valid: boolean; errors: string[] }> {
-    const errors: string[] = [];
-    
-    try {
-      // Test basic operations on each table
-      await db.students.count();
-      await db.studentAttempts.count();
-      await db.answers.count();
-      await db.quizData.count();
-    } catch (error) {
-      errors.push(`Schema validation failed: ${error}`);
-    }
-
-    return {
-      valid: errors.length === 0,
-      errors
-    };
-  }
-}; 
+export const dbUtils = new DatabaseManager(); 

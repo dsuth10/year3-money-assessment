@@ -1,20 +1,34 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, type RouteObject } from "react-router-dom";
 import App from "./App";
 import Landing from "./pages/Landing";
-// import Home from "./pages/Home";
-// import Quiz from "./pages/Quiz";
-// import Students from "./pages/Students";
+import Home from "./pages/Home";
+import Quiz from "./pages/Quiz";
+import Students from "./pages/Students";
 
-export const router = createBrowserRouter([
+// Define route configuration with proper TypeScript types
+const routes: RouteObject[] = [
   {
     path: "/",
     element: <App />,
     children: [
-      { path: "", element: <Landing /> },
-      // Temporarily comment out other routes to test landing page
-      // { path: "home", element: <Home /> },
-      // { path: "quiz", element: <Quiz /> },
-      // { path: "students", element: <Students /> },
+      { 
+        index: true, 
+        element: <Landing /> 
+      },
+      { 
+        path: "home", 
+        element: <Home /> 
+      },
+      { 
+        path: "quiz", 
+        element: <Quiz /> 
+      },
+      { 
+        path: "students", 
+        element: <Students /> 
+      },
     ],
   },
-]); 
+];
+
+export const router = createBrowserRouter(routes); 
